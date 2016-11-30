@@ -17,7 +17,18 @@ void TBD(memory m)
     int timeElapsed=0;
     while(!m.isFinished(timeElapsed))
     {
-        //
+        //get the next event
+        int event=0;//0 for arrival, 1 for exit/end of duration
+        m.nextEvent(timeElapsed, event);
+
+        if(event == 0)
+        {
+            //add the process to the memory
+        }
+        else if(event == 1)
+        {
+            //remove the process from the memory
+        }
     }
 }
 
