@@ -21,6 +21,7 @@ int main(int argc, char *argv[])
     return 0;
 }
 
+<<<<<<< HEAD
 void parse(std::vector<std::string>& lines){
     bool first = true;
     int numProcesses = 0;
@@ -37,6 +38,11 @@ void parse(std::vector<std::string>& lines){
         }
 
     }
+=======
+void TBD()
+{
+    int timeElapsed=0;
+>>>>>>> origin
 }
 
 std::string intTOstring(int number)

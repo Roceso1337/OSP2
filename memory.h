@@ -15,9 +15,9 @@ class memory
 	int frameSize;
     int memorySize;
 
-    std::vector<process> processList;
-
 public:
+	std::vector<process> processList;
+	
 	memory();
 	memory(int, int);
 
