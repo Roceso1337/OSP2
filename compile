@@ -1,0 +1,2 @@
+g++ -g -Wall -c *.cpp
+g++ -g -Wall *.o -o main
