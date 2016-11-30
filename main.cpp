@@ -21,7 +21,6 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-<<<<<<< HEAD
 void parse(std::vector<std::string>& lines){
     bool first = true;
     int numProcesses = 0;
@@ -37,12 +36,22 @@ void parse(std::vector<std::string>& lines){
             continue;
         }
 
+        char* parseString = &lines[i][0];
+        char* splitText = strtok(parseString, " ");
+        std::vector<std::string> paramList;
+
+        while (splitText != NULL){
+            std::string convText(splitText);
+            paramList.push_back(convText);
+            splitText = strtok(NULL, " ");
+        }
+
     }
-=======
+}
+
 void TBD()
 {
     int timeElapsed=0;
->>>>>>> origin
 }
 
 std::string intTOstring(int number)
