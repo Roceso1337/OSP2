@@ -47,6 +47,17 @@ void parse(std::vector<std::string>& lines){
             splitText = strtok(NULL, " ");
         }
 
+        char procName = paramList[0][0];
+        int memSize = atoi(paramList[1].c_str());
+        process p(procName, memSize);
+        
+        for (int j = 2; i < paramList.size(); i++){
+           std::size_t index = paramList[j].find('/'); 
+           int arrival = atoi(paramList[j].substr(0, index).c_str());
+           int duration = atoi(paramList[j].substr(index+1).c_str());
+           burst b(arrival, duration);
+           p.bursts.push_back(b);
+        }  
     }
 }
 
