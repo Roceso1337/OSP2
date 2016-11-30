@@ -8,6 +8,8 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <vector>
+#include "memory.h"
 
 struct process;
 

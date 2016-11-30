@@ -7,8 +7,36 @@ int main(int argc, char *argv[])
 	if(argc < 2) err("Invalid arguments\n");
 
     std::string fname=argv[1];
+    std::ifstream fd(fname.c_str());
+    std::string line;
+    std::vector<std::string> lines;
+    memory mem();
+
+    if (fd != NULL){
+        while (std::getline(fd, line)){
+            lines.push_back(line);
+        }
+    }
 
     return 0;
+}
+
+void parse(std::vector<std::string>& lines){
+    bool first = true;
+    int numProcesses = 0;
+      
+    for (unsigned int i = 0; i < lines.size(); i++){
+        if (lines[i][0] == '#')
+            continue;
+        if (lines[i].empty())
+            continue;
+        if (first){
+            numProcesses = atoi(lines[i].c_str());
+            first = false;
+            continue;
+        }
+
+    }
 }
 
 std::string intTOstring(int number)

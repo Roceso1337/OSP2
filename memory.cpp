@@ -27,6 +27,7 @@ void addProcess(int algoFlag)
 		case WORSTFIT:
 			break;
 		default:
+            break;
 	}
 }
 
