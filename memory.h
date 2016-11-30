@@ -25,7 +25,7 @@ public:
 	~memory();
 
 	bool isFinished(int);
-	int nextEvent(int);
+	void nextEvent(int&, int&);
 
 	void addProcess(int);
 	void defragment();

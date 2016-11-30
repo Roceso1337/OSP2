@@ -7,6 +7,7 @@
 
 class burst
 {
+public:
 	int arrivalTime;
 	int duration;
 public:
