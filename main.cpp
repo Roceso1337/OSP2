@@ -4,7 +4,9 @@
 
 int main(int argc, char *argv[])
 {
-	if(argc < 1) err("Invalid arguments\n");
+	if(argc < 2) err("Invalid arguments\n");
+
+    std::string fname=argv[1];
 
     return 0;
 }
