@@ -11,6 +11,11 @@ int main(int argc, char *argv[])
     return 0;
 }
 
+void TBD()
+{
+    int timeElapsed=0;
+}
+
 std::string intTOstring(int number)
 {
    std::stringstream ss;
