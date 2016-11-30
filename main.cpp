@@ -1,6 +1,7 @@
 //Daniel Sze
 //Robert Carneiro
 #include "main.h"
+#include "memory.h"
 
 int main(int argc, char *argv[])
 {
@@ -11,9 +12,13 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-void TBD()
+void TBD(memory m)
 {
     int timeElapsed=0;
+    while(!m.isFinished(timeElapsed))
+    {
+        //
+    }
 }
 
 std::string intTOstring(int number)

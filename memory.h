@@ -8,21 +8,26 @@
 
 class memory
 {
+	int frameSize;
+    int memorySize;
+
+    char* mem;
+
+public:
 	static const int NEXTFIT;
 	static const int BESTFIT;
 	static const int WORSTFIT;
 
-	int frameSize;
-    int memorySize;
-
-public:
 	std::vector<process> processList;
-	
+
 	memory();
 	memory(int, int);
+	~memory();
+
+	bool isFinished(int);
+	int nextEvent(int);
 
 	void addProcess(int);
-
 	void defragment();
 };
 

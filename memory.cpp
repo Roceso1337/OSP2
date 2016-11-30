@@ -8,25 +8,45 @@ memory::memory()
 {
 	this->frameSize=8;
     this->memorySize=256;
+    this->mem=new char[this->memorySize];
 }
 
 memory::memory(int newFrameSize, int newMemorySize)
 {
 	this->frameSize=newFrameSize;
     this->memorySize=newMemorySize;
+    this->mem=new char[this->memorySize];
+}
+
+memory::~memory()
+{
+	delete this->mem;
+}
+
+bool memory::isFinished(int cTime)
+{
+	return (nextEvent(cTime) == -1);
+}
+
+int memory::nextEvent(int cTime)//cTime=current time elapsed
+{
+	int nextTime=-1;
+
+	return nextTime;
 }
 
 void addProcess(int algoFlag)
 {
 	switch(algoFlag)
 	{
-		case NEXTFIT:
+		case memory::NEXTFIT:
 			break;
-		case BESTFIT:
+		case memory::BESTFIT:
 			break;
-		case WORSTFIT:
+		case memory::WORSTFIT:
 			break;
 		default:
+			break;
 	}
 }
 
