@@ -9,6 +9,7 @@ memory::memory()
 	this->frameSize=8;
     this->memorySize=256;
     this->mem=new char[this->memorySize];
+    bzero(this->mem, this->memorySize);
 }
 
 memory::memory(int newFrameSize, int newMemorySize)
@@ -16,6 +17,7 @@ memory::memory(int newFrameSize, int newMemorySize)
 	this->frameSize=newFrameSize;
     this->memorySize=newMemorySize;
     this->mem=new char[this->memorySize];
+    bzero(this->mem, this->memorySize);
 }
 
 memory::~memory()
@@ -91,13 +93,85 @@ void memory::nextEvent(int& cTime, int& eventFlag, process& p)//cTime = current 
 	cTime=nextTime;
 }
 
-void memory::addProcess(int algoFlag)
+void memory::addProcess(const process& p, int algoFlag)
 {
+	int cMemSize=-1;//for best/worst fit current best/worst case memory block size
+	int bestIndex=-1;//for best/worst fit current best/worst case memory block index
+
 	switch(algoFlag)
 	{
 		case memory::NEXTFIT:
+
+			//each line of the memory
+			for(int i=0;i<this->memorySize/this->frameSize;++i)
+			{
+				//each frame of the memory
+				for(int j=0;j<this->frameSize;++j)
+				{
+					int index=(i*this->frameSize)+j;
+					if(!((this->mem[index] >= 0x41) && (this->mem[index] <= 0x5A))
+						&& (index+p.memSize < this->memorySize))
+					{
+						//now check if theres enough space
+						bool fits=true;
+						for(int k=0;k<p.memSize;++k)
+						{
+							if((this->mem[index] >= 0x41) && (this->mem[index] <= 0x5A))
+							{
+								fits=false;
+								break;
+							}
+						}
+
+						//we made it! add it to the mem
+						if(fits) memcpy(&this->mem[index], &p.processName, p.memSize);
+					}
+				}
+			}
+
 			break;
 		case memory::BESTFIT:
+
+			//each line of the memory
+			for(int i=0;i<this->memorySize/this->frameSize;++i)
+			{
+				//each frame of the memory
+				for(int j=0;j<this->frameSize;++j)
+				{
+					int index=(i*this->frameSize)+j;
+					if(!((this->mem[index] >= 0x41) && (this->mem[index] <= 0x5A))
+						&& (index+p.memSize < this->memorySize))
+					{
+						//now check if theres enough space
+						int k=0;//counter
+						while(!((this->mem[index] >= 0x41) && (this->mem[index] <= 0x5A)))
+						{
+							if(k >= cMemSize) break;//memory is too big or below already available memory
+
+							++k;
+						}
+
+						//we got the size of the empty mem block, lets check if its the one
+						if(cMemSize == -1)
+						{
+							cMemSize=k;
+							bestIndex=index;
+						}
+						else
+						{
+							if(k < cMemSize)
+							{
+								cMemSize=k;
+								bestIndex=index;
+							}
+						}
+					}
+				}
+			}
+
+			//we made it! add it to the mem
+			if(bestIndex > -1) memcpy(&this->mem[bestIndex], &p.processName, p.memSize);
+
 			break;
 		case memory::WORSTFIT:
 			break;
@@ -114,16 +188,16 @@ void memory::defragment()
 void memory::print()
 {
 	//top border
-	for(int i=0;i<frameSize;++i) std::cout<<"=";
+	for(int i=0;i<this->frameSize;++i) std::cout<<"=";
 	std::cout<<std::endl;
 	
 	//each line of the memory
-	for(int i=0;i<memorySize/frameSize;++i)
+	for(int i=0;i<this->memorySize/this->frameSize;++i)
 	{
 		//each frame of the memory
-		for(int j=0;j<frameSize;++j)
+		for(int j=0;j<this->frameSize;++j)
 		{
-			int index=(i*frameSize)+j;
+			int index=(i*this->frameSize)+j;
 			if((this->mem[index] >= 0x41) && (this->mem[index] <= 0x5A))
 				std::cout<<this->mem[index];
 			else
@@ -132,6 +206,6 @@ void memory::print()
 	}
 
 	//bottom border
-	for(int i=0;i<frameSize;++i) std::cout<<"=";
+	for(int i=0;i<this->frameSize;++i) std::cout<<"=";
 	std::cout<<std::endl;
 }

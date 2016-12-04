@@ -74,18 +74,7 @@ void TBD(memory m, int algoFlag)
         if(event == 0)
         {
             //add the process to the memory
-            if(algoFlag == memory::NEXTFIT)
-            {
-                //
-            }
-            else if(algoFlag == memory::BESTFIT)
-            {
-                //
-            }
-            else if(algoFlag == memory::WORSTFIT)
-            {
-                //
-            }
+            m.addProcess(p, algoFlag);
         }
         else if(event == 1)
         {
