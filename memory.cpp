@@ -29,11 +29,11 @@ bool memory::isFinished(int cTime)
 {
 	int event=0;//doesnt matter but we need to pass it in
 	process p;//doesnt matter but we need to pass it in
-	nextEvent(cTime, event, p);
-	return (cTime == -1);
+	bool success=nextEvent(cTime, event, p);
+	return success;
 }
 
-void memory::nextEvent(int& cTime, int& eventFlag, process& p)//cTime = current time elapsed
+bool memory::nextEvent(int& cTime, int& eventFlag, process& p)//cTime = current time elapsed
 {
 	int nextTime=-1;
 	eventFlag=-1;
@@ -91,6 +91,8 @@ void memory::nextEvent(int& cTime, int& eventFlag, process& p)//cTime = current 
 	}
 
 	cTime=nextTime;
+
+	return (nextTime > -1);//success?
 }
 
 void memory::addProcess(const process& p, int algoFlag)
@@ -174,8 +176,46 @@ void memory::addProcess(const process& p, int algoFlag)
 
 			break;
 		case memory::WORSTFIT:
-			break;
-		default:
+
+			for(int i=0;i<this->memorySize/this->frameSize;++i)
+			{
+				//each frame of the memory
+				for(int j=0;j<this->frameSize;++j)
+				{
+					int index=(i*this->frameSize)+j;
+					if(!((this->mem[index] >= 0x41) && (this->mem[index] <= 0x5A))
+						&& (index+p.memSize < this->memorySize))
+					{
+						//now check if theres enough space
+						int k=0;//counter
+						while(!((this->mem[index] >= 0x41) && (this->mem[index] <= 0x5A)))
+						{
+							if(k <= cMemSize) break;//memory is too small or below already available memory
+
+							++k;
+						}
+
+						//we got the size of the empty mem block, lets check if its the one
+						if(cMemSize == -1)
+						{
+							cMemSize=k;
+							bestIndex=index;
+						}
+						else
+						{
+							if(k > cMemSize)
+							{
+								cMemSize=k;
+								bestIndex=index;
+							}
+						}
+					}
+				}
+			}
+
+			//we made it! add it to the mem
+			if(bestIndex > -1) memcpy(&this->mem[bestIndex], &p.processName, p.memSize);
+
 			break;
 	}
 }

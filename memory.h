@@ -28,7 +28,7 @@ public:
 	~memory();
 
 	bool isFinished(int);
-	void nextEvent(int&, int&, process&);
+	bool nextEvent(int&, int&, process&);
 
 	void addProcess(const process&, int);
 	void defragment();
