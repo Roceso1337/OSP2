@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
 
 void parse(std::vector<std::string>& lines){
     bool first = true;
-    int numProcesses = 0;
+    //int numProcesses = 0;
       
     for (unsigned int i = 0; i < lines.size(); i++){
         if (lines[i][0] == '#')
@@ -32,7 +32,7 @@ void parse(std::vector<std::string>& lines){
         if (lines[i].empty())
             continue;
         if (first){
-            numProcesses = atoi(lines[i].c_str());
+            //numProcesses = atoi(lines[i].c_str());
             first = false;
             continue;
         }
@@ -61,23 +61,38 @@ void parse(std::vector<std::string>& lines){
     }
 }
 
-void TBD(memory m)
+void TBD(memory m, int algoFlag)
 {
     int timeElapsed=0;
     while(!m.isFinished(timeElapsed))
     {
         //get the next event
         int event=0;//0 for arrival, 1 for exit/end of duration
-        m.nextEvent(timeElapsed, event);
+        process p;
+        m.nextEvent(timeElapsed, event, p);
 
         if(event == 0)
         {
             //add the process to the memory
+            if(algoFlag == memory::NEXTFIT)
+            {
+                //
+            }
+            else if(algoFlag == memory::BESTFIT)
+            {
+                //
+            }
+            else if(algoFlag == memory::WORSTFIT)
+            {
+                //
+            }
         }
         else if(event == 1)
         {
             //remove the process from the memory
         }
+
+        m.print();
     }
 }
 

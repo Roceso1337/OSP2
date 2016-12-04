@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
+#include <iostream>
 #include "process.h"
 
 class memory
@@ -25,10 +26,12 @@ public:
 	~memory();
 
 	bool isFinished(int);
-	void nextEvent(int&, int&);
+	void nextEvent(int&, int&, process&);
 
 	void addProcess(int);
 	void defragment();
+
+	void print();
 };
 
 #endif

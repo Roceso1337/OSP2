@@ -19,6 +19,7 @@ class process
     int memSize;
     char processName;
 public:
+	process();
     process(char name, int size){ processName = name; memSize = size;}
 	std::vector<burst> bursts;
 };
