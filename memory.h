@@ -3,7 +3,10 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <strings.h>
+#include <cstring>
 #include <vector>
+#include <iostream>
 #include "process.h"
 
 class memory
@@ -25,10 +28,12 @@ public:
 	~memory();
 
 	bool isFinished(int);
-	void nextEvent(int&, int&);
+	bool nextEvent(int&, int&, process&);
 
-	void addProcess(int);
+	void addProcess(const process&, int);
 	void defragment();
+
+	void print();
 };
 
 #endif
