@@ -17,7 +17,21 @@ int main(int argc, char *argv[])
 		while (std::getline(fd, line)){
 			lines.push_back(line);
 		}
+
+        parse(lines, m);
+
+        fd.close();
 	}
+
+
+    /*testing parsing
+    for (unsigned int i = 0; i < m.processList.size(); i++){
+        std::cout << m.processList[i].processName << m.processList[i].memSize << std::endl;
+        for (unsigned int j = 0; j < m.processList[i].bursts.size(); j++){
+            std::cout << m.processList[i].bursts[j].arrivalTime << " " << m.processList[i].bursts[j].duration << std::endl;
+        }
+    }
+    */
 
 	//for(int i=0;i<3;++i)
 		//TBD(m, i);
@@ -25,24 +39,31 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
-void parse(std::vector<std::string>& lines){
+void parse(std::vector<std::string> lines, memory& m){
 	bool first = true;
 	//int numProcesses = 0;
 	  
-	for (unsigned int i = 0; i < lines.size(); i++){
+	for (unsigned int i = 0; i < lines.size(); ++i){
 		if (lines[i][0] == '#')
 			continue;
 		if (lines[i].empty())
 			continue;
 		if (first){
-			//numProcesses = atoi(lines[i].c_str());
 			first = false;
 			continue;
 		}
 
-		char* parseString = &lines[i][0];
+		char* parseString = new char [lines[i].length()+1];
+        std::strcpy(parseString, lines[i].c_str()); 
+
 		char* splitText = strtok(parseString, " ");
+		char procName = splitText[0];
+
+        splitText = strtok(NULL, " ");
+		int memSize = atoi(splitText);
+
 		std::vector<std::string> paramList;
+        splitText = strtok(NULL, " ");
 
 		while (splitText != NULL){
 			std::string convText(splitText);
@@ -50,17 +71,17 @@ void parse(std::vector<std::string>& lines){
 			splitText = strtok(NULL, " ");
 		}
 
-		char procName = paramList[0][0];
-		int memSize = atoi(paramList[1].c_str());
 		process p(procName, memSize);
 		
-		for (int j = 2; i < paramList.size(); i++){
+		for (unsigned int j = 0; j < paramList.size(); j++){
 		   std::size_t index = paramList[j].find('/'); 
 		   int arrival = atoi(paramList[j].substr(0, index).c_str());
 		   int duration = atoi(paramList[j].substr(index+1).c_str());
 		   burst b(arrival, duration);
 		   p.bursts.push_back(b);
 		}  
+        
+        m.processList.push_back(p);
 	}
 }
 
