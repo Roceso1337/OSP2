@@ -5,10 +5,10 @@
 
 int main(int argc, char *argv[])
 {
-	if(argc < 2) err("Invalid arguments\n");
+	if(argc < 2 || argc > 3) err("Invalid arguments\n");
 
-	std::string fname=argv[1];
-	std::ifstream fd(fname.c_str());
+	std::string fname1=argv[1];
+	std::ifstream fd(fname1.c_str());
 	std::string line;
 	std::vector<std::string> lines;
 	memory m;
@@ -18,20 +18,29 @@ int main(int argc, char *argv[])
 			lines.push_back(line);
 		}
 
-        parse(lines, m);
+        parsePhys(lines, m);
 
         fd.close();
-	}
-
-
-    /*testing parsing
-    for (unsigned int i = 0; i < m.processList.size(); i++){
-        std::cout << m.processList[i].processName << m.processList[i].memSize << std::endl;
-        for (unsigned int j = 0; j < m.processList[i].bursts.size(); j++){
-            std::cout << m.processList[i].bursts[j].arrivalTime << " " << m.processList[i].bursts[j].duration << std::endl;
-        }
+	} else {
+        err("Invalid file\n");
     }
-    */
+
+    line.clear();
+    lines.clear();
+	std::string fname2=argv[1];
+	fd.open(fname2.c_str());
+
+	if (fd != NULL){
+		while (std::getline(fd, line)){
+			lines.push_back(line);
+		}
+
+        //parseVirtual(lines, m);
+
+        fd.close();
+	} else {
+        err("Invalid file\n");
+    }
 
 	//for(int i=0;i<3;++i)
 		//TBD(m, i);
@@ -39,7 +48,7 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
-void parse(std::vector<std::string> lines, memory& m){
+void parsePhys(std::vector<std::string> lines, memory& m){
 	bool first = true;
 	//int numProcesses = 0;
 	  
@@ -82,6 +91,7 @@ void parse(std::vector<std::string> lines, memory& m){
 		}  
         
         m.processList.push_back(p);
+        delete(parseString);
 	}
 }
 
