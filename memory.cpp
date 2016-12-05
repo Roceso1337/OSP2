@@ -243,6 +243,7 @@ void memory::print()
 			else
 				std::cout<<'.';
 		}
+		std::cout<<std::endl;
 	}
 
 	//bottom border
