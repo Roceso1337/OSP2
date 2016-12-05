@@ -26,11 +26,12 @@ int main(int argc, char *argv[])
 
     /*testing parsing
     for (unsigned int i = 0; i < m.processList.size(); i++){
-        std::cout << m.processList[i].processName << std::endl;
+        std::cout << m.processList[i].processName << m.processList[i].memSize << std::endl;
+        for (unsigned int j = 0; j < m.processList[i].bursts.size(); j++){
+            std::cout << m.processList[i].bursts[j].arrivalTime << " " << m.processList[i].bursts[j].duration << std::endl;
+        }
     }
     */
-
-    m.print();
 
 	//for(int i=0;i<3;++i)
 		//TBD(m, i);
@@ -43,21 +44,26 @@ void parse(std::vector<std::string> lines, memory& m){
 	//int numProcesses = 0;
 	  
 	for (unsigned int i = 0; i < lines.size(); ++i){
-        std::cout << lines[i] << std::endl;
 		if (lines[i][0] == '#')
 			continue;
 		if (lines[i].empty())
 			continue;
 		if (first){
-			//numProcesses = atoi(lines[i].c_str());
 			first = false;
 			continue;
 		}
 
 		char* parseString = new char [lines[i].length()+1];
         std::strcpy(parseString, lines[i].c_str()); 
+
 		char* splitText = strtok(parseString, " ");
+		char procName = splitText[0];
+
+        splitText = strtok(NULL, " ");
+		int memSize = atoi(splitText);
+
 		std::vector<std::string> paramList;
+        splitText = strtok(NULL, " ");
 
 		while (splitText != NULL){
 			std::string convText(splitText);
@@ -65,11 +71,9 @@ void parse(std::vector<std::string> lines, memory& m){
 			splitText = strtok(NULL, " ");
 		}
 
-		char procName = paramList[0][0];
-		int memSize = atoi(paramList[1].c_str());
 		process p(procName, memSize);
 		
-		for (int j = 2; i < paramList.size(); i++){
+		for (unsigned int j = 0; j < paramList.size(); j++){
 		   std::size_t index = paramList[j].find('/'); 
 		   int arrival = atoi(paramList[j].substr(0, index).c_str());
 		   int duration = atoi(paramList[j].substr(index+1).c_str());
