@@ -17,7 +17,20 @@ int main(int argc, char *argv[])
 		while (std::getline(fd, line)){
 			lines.push_back(line);
 		}
+
+        parse(lines, m);
+
+        fd.close();
 	}
+
+
+    /*testing parsing
+    for (unsigned int i = 0; i < m.processList.size(); i++){
+        std::cout << m.processList[i].processName << std::endl;
+    }
+    */
+
+    m.print();
 
 	//for(int i=0;i<3;++i)
 		//TBD(m, i);
@@ -25,11 +38,12 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
-void parse(std::vector<std::string>& lines){
+void parse(std::vector<std::string> lines, memory& m){
 	bool first = true;
 	//int numProcesses = 0;
 	  
-	for (unsigned int i = 0; i < lines.size(); i++){
+	for (unsigned int i = 0; i < lines.size(); ++i){
+        std::cout << lines[i] << std::endl;
 		if (lines[i][0] == '#')
 			continue;
 		if (lines[i].empty())
@@ -40,7 +54,8 @@ void parse(std::vector<std::string>& lines){
 			continue;
 		}
 
-		char* parseString = &lines[i][0];
+		char* parseString = new char [lines[i].length()+1];
+        std::strcpy(parseString, lines[i].c_str()); 
 		char* splitText = strtok(parseString, " ");
 		std::vector<std::string> paramList;
 
@@ -61,6 +76,8 @@ void parse(std::vector<std::string>& lines){
 		   burst b(arrival, duration);
 		   p.bursts.push_back(b);
 		}  
+        
+        m.processList.push_back(p);
 	}
 }
 

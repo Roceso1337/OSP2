@@ -14,7 +14,7 @@
 
 struct process;
 
-void parse(std::vector<std::string>&);
+void parse(std::vector<std::string>, memory&);
 void TBD(memory, int);
 std::string intTOstring(int);
 std::string floatTOstring(float);
