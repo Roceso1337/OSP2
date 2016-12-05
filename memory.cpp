@@ -220,6 +220,22 @@ void memory::addProcess(const process& p, int algoFlag)
 	}
 }
 
+void memory::removeProcess(const process& p)
+{
+	//each line of the memory
+	for(int i=0;i<this->memorySize/this->frameSize;++i)
+	{
+		//each frame of the memory
+		for(int j=0;j<this->frameSize;++j)
+		{
+			int index=(i*this->frameSize)+j;
+			if(this->mem[index] == p.processName)
+				bzero(&this->mem[index], sizeof(char));
+		}
+		std::cout<<std::endl;
+	}
+}
+
 void memory::defragment()
 {
 	//
@@ -243,6 +259,7 @@ void memory::print()
 			else
 				std::cout<<'.';
 		}
+		std::cout<<std::endl;
 	}
 
 	//bottom border

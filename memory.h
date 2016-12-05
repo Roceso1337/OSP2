@@ -31,6 +31,7 @@ public:
 	bool nextEvent(int&, int&, process&);
 
 	void addProcess(const process&, int);
+	void removeProcess(const process&);
 	void defragment();
 
 	void print();
