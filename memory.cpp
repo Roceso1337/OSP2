@@ -158,29 +158,31 @@ void memory::addProcess(const process& p, int algoFlag, int timeElapsed)
 	{
 		case memory::NEXTFIT:
 
-			//each line of the memory
-			for(int i=0;i<this->memorySize/this->frameSize;++i)
+			//each character of the memory
+			for(int i=0;i<this->memorySize;++i)
 			{
-				//each frame of the memory
-				for(int j=0;j<this->frameSize;++j)
-				{
-					int index=(i*this->frameSize)+j;
-					if(!((this->mem[index] >= 0x41) && (this->mem[index] <= 0x5A))
-						&& (index+p.memSize < this->memorySize))
-					{
-						//now check if theres enough space
-						bool fits=true;
-						for(int k=0;k<p.memSize;++k)
-						{
-							if((this->mem[index] >= 0x41) && (this->mem[index] <= 0x5A))
-							{
-								fits=false;
-								break;
-							}
-						}
+				bool fits=false;
 
-						//we made it! add it to the mem
-						if(fits) memset(&this->mem[index], p.processName, p.memSize);
+				//is it filled?
+				if(!((this->mem[i] >= 0x41) && (this->mem[i] <= 0x5A))
+					&& (i+p.memSize < this->memorySize))
+				{
+					//now check if theres enough space before another character
+					fits=true;
+					for(int k=0;k<p.memSize;++k)
+					{
+						if((this->mem[i] >= 0x41) && (this->mem[i] <= 0x5A))
+						{
+							fits=false;
+							break;
+						}
+					}
+
+					//we made it! add it to the mem
+					if(fits)
+					{
+						memset(&this->mem[i], p.processName, p.memSize);
+						break;
 					}
 				}
 			}
