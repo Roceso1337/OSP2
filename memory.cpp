@@ -22,7 +22,7 @@ pHistoryData::pHistoryData(int newTimeExecuted, int newEvent, char newPName)
 //MEMORY
 memory::memory()
 {
-	this->frameSize=8;
+	this->frameSize=32;
     this->memorySize=256;
     this->mem=new char[this->memorySize];
     bzero(this->mem, this->memorySize);
