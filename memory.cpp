@@ -180,7 +180,7 @@ void memory::addProcess(const process& p, int algoFlag, int timeElapsed)
 						}
 
 						//we made it! add it to the mem
-						if(fits) memcpy(&this->mem[index], &p.processName, p.memSize);
+						if(fits) memset(&this->mem[index], p.processName, p.memSize);
 					}
 				}
 			}
