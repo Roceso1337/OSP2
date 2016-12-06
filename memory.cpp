@@ -4,6 +4,22 @@ const int memory::NEXTFIT=0;
 const int memory::BESTFIT=1;
 const int memory::WORSTFIT=2;
 
+//pHistoryData
+pHistoryData::pHistoryData()
+{
+	timeExecuted=-1;
+	event=-1;
+	processName='.';
+}
+
+pHistoryData::pHistoryData(int newTimeExecuted, int newEvent, char newPName)
+{
+	timeExecuted=newTimeExecuted;
+	event=newEvent;
+	processName=newPName;
+}
+
+//MEMORY
 memory::memory()
 {
 	this->frameSize=8;
@@ -22,7 +38,7 @@ memory::memory(int newFrameSize, int newMemorySize)
 
 memory::~memory()
 {
-	delete this->mem;
+	//delete this->mem;
 }
 
 bool memory::isFinished(int cTime)
@@ -30,7 +46,7 @@ bool memory::isFinished(int cTime)
 	int event=0;//doesnt matter but we need to pass it in
 	process p;//doesnt matter but we need to pass it in
 	bool success=nextEvent(cTime, event, p);
-	return success;
+	return !success;
 }
 
 bool memory::nextEvent(int& cTime, int& eventFlag, process& p)//cTime = current time elapsed
@@ -42,10 +58,34 @@ bool memory::nextEvent(int& cTime, int& eventFlag, process& p)//cTime = current 
 	{
 		for(unsigned int j=0;j<processList[i].bursts.size();++j)
 		{
+			//go back far enough in the history but not too far
+			int firstIndexAtTime=-1;
+			for(int k=processHistory.size()-1;k>=0;--k)
+			{
+				if(processHistory[k].timeExecuted == cTime)
+					firstIndexAtTime=k;
+				else if(processHistory[k].timeExecuted < cTime)//no need to go further
+					break;
+			}
+
 			//arrival time
 			//process arrive
 			if(processList[i].bursts[j].arrivalTime >= cTime)
 			{
+				//check if we already ran this process's burst
+				if(firstIndexAtTime > -1)
+				{
+					bool alreadyRan=false;
+					for(unsigned int k=firstIndexAtTime;k<processHistory.size();++k)
+					{
+						if((processHistory[k].processName == processList[i].processName)
+							&& (processHistory[k].event == 0))
+							alreadyRan=true;
+					}
+
+					if(alreadyRan) continue;//next process/burst
+				}
+
 				if(nextTime == -1)//first valid time we found
 				{
 					nextTime=processList[i].bursts[j].arrivalTime;
@@ -65,6 +105,20 @@ bool memory::nextEvent(int& cTime, int& eventFlag, process& p)//cTime = current 
 			}
 			else
 			{
+				//check if we already ran this process
+				if(firstIndexAtTime > -1)
+				{
+					bool alreadyRan=false;
+					for(unsigned int k=firstIndexAtTime;k<processHistory.size();++k)
+					{
+						if((processHistory[k].processName == processList[i].processName)
+							&& (processHistory[k].event == 1))
+							alreadyRan=true;
+					}
+
+					if(alreadyRan) continue;//next process
+				}
+
 				//thread already arrived
 				//maybe the duration of the process is almost over (process exit)
 				if(processList[i].bursts[j].arrivalTime+processList[i].bursts[j].duration >= cTime)
@@ -95,7 +149,7 @@ bool memory::nextEvent(int& cTime, int& eventFlag, process& p)//cTime = current 
 	return (nextTime > -1);//success?
 }
 
-void memory::addProcess(const process& p, int algoFlag)
+void memory::addProcess(const process& p, int algoFlag, int timeElapsed)
 {
 	int cMemSize=-1;//for best/worst fit current best/worst case memory block size
 	int bestIndex=-1;//for best/worst fit current best/worst case memory block index
@@ -218,9 +272,12 @@ void memory::addProcess(const process& p, int algoFlag)
 
 			break;
 	}
+
+	pHistoryData hist(timeElapsed, 0, p.processName);
+	processHistory.push_back(hist);
 }
 
-void memory::removeProcess(const process& p)
+void memory::removeProcess(const process& p, int timeElapsed)
 {
 	//each line of the memory
 	for(int i=0;i<this->memorySize/this->frameSize;++i)
@@ -234,6 +291,9 @@ void memory::removeProcess(const process& p)
 		}
 		std::cout<<std::endl;
 	}
+
+	pHistoryData hist(timeElapsed, 1, p.processName);
+	processHistory.push_back(hist);
 }
 
 void memory::defragment()

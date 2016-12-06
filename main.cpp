@@ -33,8 +33,8 @@ int main(int argc, char *argv[])
     }
     */
 
-	//for(int i=0;i<3;++i)
-		//TBD(m, i);
+	for(int i=0;i<3;++i)
+		TBD(m, i);
 
 	return 0;
 }
@@ -112,7 +112,7 @@ void TBD(memory m, int algoFlag)
 				std::cout<<"time "<<timeElapsed<<"ms: ";
 				std::cout<<"Process "<<p.processName<<" arrived (requires "<<p.memSize<<" frames)"<<std::endl;
 
-				m.addProcess(p, algoFlag);
+				m.addProcess(p, algoFlag, timeElapsed);
 
 				std::cout<<"time "<<timeElapsed<<"ms: ";
 				std::cout<<"Placed process "<<p.processName<<":"<<std::endl;
@@ -122,6 +122,8 @@ void TBD(memory m, int algoFlag)
 				//remove the process from the memory
 				std::cout<<"time "<<timeElapsed<<"ms: ";
 				std::cout<<"Process "<<p.processName<<" removed:"<<std::endl;
+
+				m.removeProcess(p, timeElapsed);
 			}
 		}
 		else
