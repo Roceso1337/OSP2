@@ -90,6 +90,7 @@ bool memory::nextEvent(int& cTime, int& eventFlag, process& p)//cTime = current 
 				{
 					nextTime=processList[i].bursts[j].arrivalTime;
 					p=processList[i];
+					eventFlag=0;
 				}
 				else
 				{
@@ -97,11 +98,9 @@ bool memory::nextEvent(int& cTime, int& eventFlag, process& p)//cTime = current 
 					{
 						nextTime=processList[i].bursts[j].arrivalTime;
 						p=processList[i];
+						eventFlag=0;
 					}
 				}
-
-				//process arrival
-				eventFlag=0;
 			}
 			else
 			{
@@ -127,6 +126,7 @@ bool memory::nextEvent(int& cTime, int& eventFlag, process& p)//cTime = current 
 					{
 						nextTime=processList[i].bursts[j].arrivalTime+processList[i].bursts[j].duration;
 						p=processList[i];
+						eventFlag=1;
 					}
 					else
 					{
@@ -134,11 +134,9 @@ bool memory::nextEvent(int& cTime, int& eventFlag, process& p)//cTime = current 
 						{
 							nextTime=processList[i].bursts[j].arrivalTime+processList[i].bursts[j].duration;
 							p=processList[i];
+							eventFlag=1;
 						}
 					}
-
-					//process exit
-					eventFlag=1;
 				}
 			}
 		}
@@ -291,7 +289,6 @@ void memory::removeProcess(const process& p, int timeElapsed)
 			if(this->mem[index] == p.processName)
 				bzero(&this->mem[index], sizeof(char));
 		}
-		std::cout<<std::endl;
 	}
 
 	pHistoryData hist(timeElapsed, 1, p.processName);
