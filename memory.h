@@ -24,6 +24,7 @@ class memory
 {
 	int frameSize;
     int memorySize;
+    int freeSpace;
 
     char* mem;
 
@@ -41,10 +42,12 @@ public:
 
 	bool isFinished(int);
 	bool nextEvent(int&, int&, process&);
+	int getFreeSpace();
 
-	void addProcess(const process&, int, int);
+	bool addProcess(const process&, int, int);
 	void removeProcess(const process&, int);
-	void defragment();
+	void skip(const process&, int);
+	void defragment(const process&, int);
 
 	void print();
 };

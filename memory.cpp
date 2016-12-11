@@ -24,6 +24,7 @@ memory::memory()
 {
 	this->frameSize=32;
     this->memorySize=256;
+    this->freeSpace=this->memorySize;
     this->mem=new char[this->memorySize];
     bzero(this->mem, this->memorySize);
 }
@@ -32,6 +33,7 @@ memory::memory(int newFrameSize, int newMemorySize)
 {
 	this->frameSize=newFrameSize;
     this->memorySize=newMemorySize;
+    this->freeSpace=this->memorySize;
     this->mem=new char[this->memorySize];
     bzero(this->mem, this->memorySize);
 }
@@ -147,8 +149,16 @@ bool memory::nextEvent(int& cTime, int& eventFlag, process& p)//cTime = current 
 	return (nextTime > -1);//success?
 }
 
-void memory::addProcess(const process& p, int algoFlag, int timeElapsed)
+int memory::getFreeSpace()
 {
+	return this->freeSpace;
+}
+
+bool memory::addProcess(const process& p, int algoFlag, int timeElapsed)
+{
+	bool success=false;
+
+	int bCounter=0;//for next fit current memory block size
 	int cMemSize=-1;//for best/worst fit current best/worst case memory block size
 	int bestIndex=-1;//for best/worst fit current best/worst case memory block index
 
@@ -159,30 +169,21 @@ void memory::addProcess(const process& p, int algoFlag, int timeElapsed)
 			//each character of the memory
 			for(int i=0;i<this->memorySize;++i)
 			{
-				bool fits=false;
-
 				//is it filled?
-				if(!((this->mem[i] >= 0x41) && (this->mem[i] <= 0x5A))
-					&& (i+p.memSize < this->memorySize))
+				if(!((this->mem[i] >= 0x41) && (this->mem[i] <= 0x5A)))
 				{
-					//now check if theres enough space before another character
-					fits=true;
-					for(int k=0;k<p.memSize;++k)
-					{
-						if((this->mem[i] >= 0x41) && (this->mem[i] <= 0x5A))
-						{
-							fits=false;
-							break;
-						}
-					}
+					++bCounter;
 
-					//we made it! add it to the mem
-					if(fits)
+					if(bCounter == p.memSize)
 					{
-						memset(&this->mem[i], p.processName, p.memSize);
+						memset(&this->mem[i-bCounter+1], p.processName, p.memSize);
+						this->freeSpace-=p.memSize;
+						success=true;
 						break;
 					}
 				}
+				else
+					bCounter=0;
 			}
 
 			break;
@@ -226,7 +227,12 @@ void memory::addProcess(const process& p, int algoFlag, int timeElapsed)
 			}
 
 			//we made it! add it to the mem
-			if(bestIndex > -1) memcpy(&this->mem[bestIndex], &p.processName, p.memSize);
+			if(bestIndex > -1)
+			{
+				memset(&this->mem[bestIndex], p.processName, p.memSize);
+				this->freeSpace-=p.memSize;
+				success=true;
+			}
 
 			break;
 		case memory::WORSTFIT:
@@ -268,13 +274,23 @@ void memory::addProcess(const process& p, int algoFlag, int timeElapsed)
 			}
 
 			//we made it! add it to the mem
-			if(bestIndex > -1) memcpy(&this->mem[bestIndex], &p.processName, p.memSize);
+			if(bestIndex > -1)
+			{
+				memset(&this->mem[bestIndex], p.processName, p.memSize);
+				this->freeSpace-=p.memSize;
+				success=true;
+			}
 
 			break;
 	}
 
-	pHistoryData hist(timeElapsed, 0, p.processName);
-	processHistory.push_back(hist);
+	if(success)
+	{
+		pHistoryData hist(timeElapsed, 0, p.processName);
+		processHistory.push_back(hist);
+	}
+
+	return success;
 }
 
 void memory::removeProcess(const process& p, int timeElapsed)
@@ -287,7 +303,10 @@ void memory::removeProcess(const process& p, int timeElapsed)
 		{
 			int index=(i*this->frameSize)+j;
 			if(this->mem[index] == p.processName)
+			{
 				bzero(&this->mem[index], sizeof(char));
+				++this->freeSpace;
+			}
 		}
 	}
 
@@ -295,7 +314,13 @@ void memory::removeProcess(const process& p, int timeElapsed)
 	processHistory.push_back(hist);
 }
 
-void memory::defragment()
+void memory::skip(const process& p, int timeElapsed)
+{
+	pHistoryData hist(timeElapsed, 0, p.processName);
+	processHistory.push_back(hist);
+}
+
+void memory::defragment(const process& p, int timeElapsed)
 {
 	//
 }
