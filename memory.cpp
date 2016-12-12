@@ -158,7 +158,7 @@ bool memory::addProcess(const process& p, int algoFlag, int timeElapsed)
 {
 	bool success=false;
 
-	int bCounter=0;//for next fit current memory block size
+	bool before=true;//for next fit
 	int cMemSize=-1;//for best/worst fit current best/worst case memory block size
 	int bestIndex=-1;//for best/worst fit current best/worst case memory block index
 
@@ -169,21 +169,44 @@ bool memory::addProcess(const process& p, int algoFlag, int timeElapsed)
 			//each character of the memory
 			for(int i=0;i<this->memorySize;++i)
 			{
-				//is it filled?
-				if(!((this->mem[i] >= 0x41) && (this->mem[i] <= 0x5A)))
+				if(this->freeSpace == this->memorySize)
 				{
-					++bCounter;
-
-					if(bCounter == p.memSize)
-					{
-						memset(&this->mem[i-bCounter+1], p.processName, p.memSize);
-						this->freeSpace-=p.memSize;
-						success=true;
-						break;
-					}
+					memset(&this->mem[i], p.processName, p.memSize);
+					this->freeSpace-=p.memSize;
+					success=true;
+					break;
 				}
 				else
-					bCounter=0;
+				{
+					if((this->mem[i] >= 0x41) && (this->mem[i] <= 0x5A))
+					{
+						//before
+						if((before) && (i-p.memSize >= 0))
+						{
+							memset(&this->mem[i-p.memSize], p.processName, p.memSize);
+							this->freeSpace-=p.memSize;
+							success=true;
+							break;
+						}
+						else before=false;
+					}
+					else
+					{
+						if(!before)
+						{
+							//after
+							if(i+p.memSize <= this->memorySize)
+							{
+								memset(&this->mem[i], p.processName, p.memSize);
+								this->freeSpace-=p.memSize;
+								success=true;
+								break;
+							}
+							else
+								break;
+						}
+					}
+				}
 			}
 
 			break;
@@ -322,7 +345,25 @@ void memory::skip(const process& p, int timeElapsed)
 
 void memory::defragment(const process& p, int timeElapsed)
 {
-	//
+	int bIndex=-1;
+
+	//each character of the memory
+	for(int i=0;i<this->memorySize;++i)
+	{
+		//is it filled?
+		if((this->mem[i] >= 0x41) && (this->mem[i] <= 0x5A))
+		{
+			//move the memory
+			memcpy(&this->mem[bIndex], &this->mem[i], this->memorySize-i);
+			//bzero(&this->mem[this->memorySize-i], this->memorySize-bIndex);
+			break;
+		}
+		else
+		{
+			//where is it
+			if(bIndex == -1) bIndex=i;
+		}
+	}
 }
 
 void memory::print()
