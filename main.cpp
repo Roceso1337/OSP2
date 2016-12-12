@@ -125,10 +125,12 @@ void TBD(memory m, int algoFlag)
 					std::cout<<"Cannot place process "<<p.processName<<" -- starting defragmentation"<<std::endl;
 
 					//defragment if it didnt fit
-					m.defragment(p, timeElapsed);
+					int frames=m.defragment(timeElapsed);
 
 					std::cout<<"time "<<timeElapsed<<"ms: ";
-					std::cout<<"Defragmentation complete (moved 210 frames: B, C, D, E, F)"<<std::endl;
+					std::cout<<"Defragmentation complete (moved "<<frames<<" frames: B, C, D, E, F)"<<std::endl;
+
+					m.addProcess(p, algoFlag, timeElapsed);
 				}
 			}
 			else

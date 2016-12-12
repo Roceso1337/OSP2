@@ -343,7 +343,7 @@ void memory::skip(const process& p, int timeElapsed)
 	processHistory.push_back(hist);
 }
 
-void memory::defragment(const process& p, int timeElapsed)
+int memory::defragment(int& timeElapsed)
 {
 	int bIndex=-1;
 
@@ -354,9 +354,10 @@ void memory::defragment(const process& p, int timeElapsed)
 		if((this->mem[i] >= 0x41) && (this->mem[i] <= 0x5A))
 		{
 			//move the memory
-			memcpy(&this->mem[bIndex], &this->mem[i], this->memorySize-i);
-			//bzero(&this->mem[this->memorySize-i], this->memorySize-bIndex);
-			break;
+			memcpy(&this->mem[bIndex], &this->mem[i], this->memorySize-this->freeSpace);
+			bzero(&this->mem[this->memorySize-this->freeSpace], this->freeSpace);
+			timeElapsed+=this->memorySize-this->freeSpace;
+			return this->memorySize-this->freeSpace;
 		}
 		else
 		{
@@ -364,6 +365,8 @@ void memory::defragment(const process& p, int timeElapsed)
 			if(bIndex == -1) bIndex=i;
 		}
 	}
+
+	return 0;
 }
 
 void memory::print()
