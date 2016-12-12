@@ -30,12 +30,14 @@ int main(int argc, char *argv[])
 	std::string fname2=argv[1];
 	fd.open(fname2.c_str());
 
+    std::vector<int> virtualMem;
+
 	if (fd != NULL){
 		while (std::getline(fd, line)){
 			lines.push_back(line);
 		}
 
-        //parseVirtual(lines, m);
+        //parseVirtual(lines, virtualMem);
 
         fd.close();
 	} else {
@@ -48,7 +50,7 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
-void parsePhys(std::vector<std::string> lines, memory& m){
+void parsePhys(std::vector<std::string>& lines, memory& m){
 	bool first = true;
 	//int numProcesses = 0;
 	  
@@ -93,6 +95,24 @@ void parsePhys(std::vector<std::string> lines, memory& m){
         m.processList.push_back(p);
         delete(parseString);
 	}
+}
+
+void parseVirtual(std::vector<std::string>& lines, std::vector<int>& virtualMem){
+	for (unsigned int i = 0; i < lines.size(); ++i){
+		char* parseString = new char [lines[i].length()+1];
+        std::strcpy(parseString, lines[i].c_str()); 
+
+		char* splitText = strtok(parseString, " ");
+        virtualMem.push_back(atoi(splitText));
+        splitText = strtok(NULL, " ");
+        
+		while (splitText != NULL){
+			virtualMem.push_back(atoi(splitText));
+			splitText = strtok(NULL, " ");
+		}
+
+        delete(parseString);
+    }
 }
 
 void TBD(memory m, int algoFlag)

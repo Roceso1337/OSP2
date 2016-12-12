@@ -14,7 +14,8 @@
 
 struct process;
 
-void parsePhys(std::vector<std::string>, memory&);
+void parsePhys(std::vector<std::string>&, memory&);
+void parseVirtual(std::vector<std::string>&)
 void TBD(memory, int);
 std::string intTOstring(int);
 std::string floatTOstring(float);
