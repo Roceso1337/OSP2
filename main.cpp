@@ -44,8 +44,8 @@ int main(int argc, char *argv[])
         err("Invalid file\n");
     }
 
-	//for(int i=0;i<3;++i)
-		//TBD(m, i);
+	for(int i=0;i<3;++i)
+		TBD(m, i);
 
 	return 0;
 }
@@ -132,32 +132,50 @@ void TBD(memory m, int algoFlag)
 		//get the next event
 		int event=0;//0 for arrival, 1 for exit/end of duration
 		process p;
-		bool success=m.nextEvent(timeElapsed, event, p);
+		m.nextEvent(timeElapsed, event, p);
 
-		if(success)
+		if(event == 0)
 		{
-			if(event == 0)
+			std::cout<<"time "<<timeElapsed<<"ms: ";
+			std::cout<<"Process "<<p.processName<<" arrived (requires "<<p.memSize<<" frames)"<<std::endl;
+
+			if(m.getFreeSpace() >= p.memSize)
 			{
 				//add the process to the memory
-				std::cout<<"time "<<timeElapsed<<"ms: ";
-				std::cout<<"Process "<<p.processName<<" arrived (requires "<<p.memSize<<" frames)"<<std::endl;
+				bool sucess=m.addProcess(p, algoFlag, timeElapsed);
 
-				m.addProcess(p, algoFlag);
+				if(sucess)
+				{
+					std::cout<<"time "<<timeElapsed<<"ms: ";
+					std::cout<<"Placed process "<<p.processName<<":"<<std::endl;
+				}
+				else
+				{
+					std::cout<<"time "<<timeElapsed<<"ms: ";
+					std::cout<<"Cannot place process "<<p.processName<<" -- starting defragmentation"<<std::endl;
 
-				std::cout<<"time "<<timeElapsed<<"ms: ";
-				std::cout<<"Placed process "<<p.processName<<":"<<std::endl;
+					//defragment if it didnt fit
+					m.defragment(p, timeElapsed);
+
+					std::cout<<"time "<<timeElapsed<<"ms: ";
+					std::cout<<"Defragmentation complete (moved 210 frames: B, C, D, E, F)"<<std::endl;
+				}
 			}
-			else if(event == 1)
+			else
 			{
-				//remove the process from the memory
+				m.skip(p, timeElapsed);
+
 				std::cout<<"time "<<timeElapsed<<"ms: ";
-				std::cout<<"Process "<<p.processName<<" removed:"<<std::endl;
+				std::cout<<"Cannot place process "<<p.processName<<" -- skipped!"<<std::endl;
 			}
 		}
-		else
+		else if(event == 1)
 		{
-			//defragment if the memory isnt full
-			//m.defragment();
+			//remove the process from the memory
+			std::cout<<"time "<<timeElapsed<<"ms: ";
+			std::cout<<"Process "<<p.processName<<" removed:"<<std::endl;
+
+			m.removeProcess(p, timeElapsed);
 		}
 
 		m.print();

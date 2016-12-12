@@ -9,10 +9,22 @@
 #include <iostream>
 #include "process.h"
 
+class pHistoryData
+{
+public:
+	int timeExecuted;
+	int event;
+	char processName;
+
+	pHistoryData();
+	pHistoryData(int, int, char);
+};
+
 class memory
 {
 	int frameSize;
     int memorySize;
+    int freeSpace;
 
     char* mem;
 
@@ -22,6 +34,7 @@ public:
 	static const int WORSTFIT;
 
 	std::vector<process> processList;
+	std::vector<pHistoryData> processHistory;
 
 	memory();
 	memory(int, int);
@@ -29,9 +42,12 @@ public:
 
 	bool isFinished(int);
 	bool nextEvent(int&, int&, process&);
+	int getFreeSpace();
 
-	void addProcess(const process&, int);
-	void defragment();
+	bool addProcess(const process&, int, int);
+	void removeProcess(const process&, int);
+	void skip(const process&, int);
+	void defragment(const process&, int);
 
 	void print();
 };
