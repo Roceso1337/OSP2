@@ -39,7 +39,11 @@ int main(int argc, char *argv[])
 
         parseVirtual(lines, virtualMem);
         handleVirt(virtualMem, 0);
+        std::cout << std::endl;
         handleVirt(virtualMem, 1);
+        std::cout << std::endl;
+        handleVirt(virtualMem, 2);
+        std::cout << std::endl;
 
         fd.close();
 	} else {
@@ -133,6 +137,7 @@ void handleVirt(std::vector<int>& virtualMem, int algoFlag){
         lru(virtualMem, F);
     } else if (algoFlag == 2) {
         std::cout << "Simulating LFU with fixed frame size of " << F << std::endl;
+        lfu(virtualMem, F);
     }
 }
 
@@ -310,6 +315,92 @@ void lru(std::vector<int>& virtualMem, const int F){
     }
 
     std::cout << "End of LRU simulation (" << pageFaults << " page faults)" << std::endl;
+}
+
+void lfu(std::vector<int>& virtualMem, const int F){
+    int mem[F] = {-1, -1, -1};
+    int pageFaults = 0;
+    int memFill = 0;
+    std::map<int, int> occurences;
+
+    for (unsigned int i = 0; i < virtualMem.size(); i++){
+        std::ostringstream oss;
+        oss << "referencing page " <<  virtualMem[i];
+
+        // case where there are unfilled spots
+        if (memFill < F){
+            bool filled = false;
+            for (int j = 0; j < F; j++){
+                if (mem[j] == virtualMem[i]){
+                    occurences[virtualMem[i]]++;
+                    break;
+                }
+                if (mem[j] == -1){
+                    pageFaults++; 
+                    mem[j] = virtualMem[i];
+                    memFill++;
+                    oss << "[mem: ";
+                    for (int k = 0; k < F; k++){
+                        if (mem[k] == - 1)
+                            oss << ".";
+                        else
+                            oss << mem[k];
+                        if (k != F - 1)
+                            oss << " ";
+                    }
+                    oss <<  "] PAGE FAULT (no victim page)";
+                    filled = true;
+                    occurences[mem[j]] =  1;
+                }
+
+                if (filled) {
+                    std::cout << oss.str() << std::endl;
+                    break;
+                }
+            }
+        } else { // all spots are already filled, begin OPT
+
+            bool exists = false;
+
+            // make sure the mem isnt already included
+            for (int j = 0; j < F; j++){
+                if (mem[j] == virtualMem[i]){
+                    occurences[virtualMem[i]]++;
+                    exists = true;
+                    break;
+                }
+            }
+
+            if (exists){
+                continue;
+            }
+
+            int min = 0;
+            for (int j = 1; j < F; j++){
+                if (occurences[mem[j]] < occurences[mem[min]] || (occurences[mem[j]] == occurences[mem[min]]
+                            && mem[j] < mem[min])){
+                    min = j;
+                }
+            }
+            occurences[mem[min]] = 1;
+            int fault = mem[min];
+            mem[min] = virtualMem[i];
+            occurences[mem[min]] = 1;
+
+            oss << "[mem: ";
+            for (int k = 0; k < F; k++){
+                oss << mem[k];
+                if (k != F - 1)
+                    oss << " ";
+            }
+            oss <<  "] PAGE FAULT (victim page " << fault << ")";
+            std::cout << oss.str() << std::endl;
+
+            pageFaults++;
+        } 
+    }
+
+    std::cout << "End of LFU simulation (" << pageFaults << " page faults)" << std::endl;
 }
 
 void TBD(memory m, int algoFlag)
