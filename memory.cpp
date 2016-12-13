@@ -212,37 +212,44 @@ bool memory::addProcess(const process& p, int algoFlag, int timeElapsed)
 			break;
 		case memory::BESTFIT:
 
-			//each line of the memory
-			for(int i=0;i<this->memorySize/this->frameSize;++i)
+			//each character of the memory
+			for(int i=0;i<this->memorySize;++i)
 			{
-				//each frame of the memory
-				for(int j=0;j<this->frameSize;++j)
+				if(this->freeSpace == this->memorySize)
 				{
-					int index=(i*this->frameSize)+j;
-					if(!((this->mem[index] >= 0x41) && (this->mem[index] <= 0x5A))
-						&& (index+p.memSize < this->memorySize))
+					memset(&this->mem[i], p.processName, p.memSize);
+					this->freeSpace-=p.memSize;
+					success=true;
+					break;
+				}
+				else
+				{
+					if(!((this->mem[i] >= 0x41) && (this->mem[i] <= 0x5A)))
 					{
-						//now check if theres enough space
-						int k=0;//counter
-						while(!((this->mem[index] >= 0x41) && (this->mem[index] <= 0x5A)))
+						if(i+p.memSize < this->memorySize)
 						{
-							if(k >= cMemSize) break;//memory is too big or below already available memory
+							//now check if theres enough space
+							int k=0;//counter
+							while(!((this->mem[k] >= 0x41) && (this->mem[k] <= 0x5A)))
+							{
+								if(k >= cMemSize) break;//memory is too big or below already available memory
 
-							++k;
-						}
+								++k;
+							}
 
-						//we got the size of the empty mem block, lets check if its the one
-						if(cMemSize == -1)
-						{
-							cMemSize=k;
-							bestIndex=index;
-						}
-						else
-						{
-							if(k < cMemSize)
+							//we got the size of the empty mem block, lets check if its the one
+							if(cMemSize == -1)
 							{
 								cMemSize=k;
-								bestIndex=index;
+								bestIndex=i;
+							}
+							else
+							{
+								if(k < cMemSize)
+								{
+									cMemSize=k;
+									bestIndex=i;
+								}
 							}
 						}
 					}
@@ -400,4 +407,11 @@ void memory::print()
 	//bottom border
 	for(int i=0;i<this->frameSize;++i) std::cout<<"=";
 	std::cout<<std::endl;
+}
+
+void memory::clear()
+{
+    this->freeSpace=this->memorySize;
+    bzero(this->mem, this->memorySize);
+	processHistory.clear();
 }

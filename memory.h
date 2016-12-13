@@ -50,6 +50,7 @@ public:
 	int defragment(std::vector<char>&);
 
 	void print();
+	void clear();
 };
 
 #endif

@@ -33,8 +33,12 @@ int main(int argc, char *argv[])
     }
     */
 
-	for(int i=0;i<3;++i)
+	for(int i=1;i<3;++i)
+	{
+		m.clear();
 		TBD(m, i);
+		std::cout<<std::endl;
+	}
 
 	return 0;
 }
