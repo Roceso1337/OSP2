@@ -39,8 +39,11 @@ int main(int argc, char *argv[])
 
         parseVirtual(lines, virtualMem);
         handleVirt(virtualMem, 0);
+        std::cout << std::endl;
         handleVirt(virtualMem, 1);
+        std::cout << std::endl;
         handleVirt(virtualMem, 2);
+        std::cout << std::endl;
 
         fd.close();
 	} else {
