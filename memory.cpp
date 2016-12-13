@@ -343,30 +343,37 @@ void memory::skip(const process& p, int timeElapsed)
 	processHistory.push_back(hist);
 }
 
-int memory::defragment(int& timeElapsed)
+int memory::defragment(std::vector<char>& pList)
 {
-	int bIndex=-1;
+	int bCounter=0;
+	int frames=0;
 
-	//each character of the memory
 	for(int i=0;i<this->memorySize;++i)
 	{
 		//is it filled?
 		if((this->mem[i] >= 0x41) && (this->mem[i] <= 0x5A))
 		{
-			//move the memory
-			memcpy(&this->mem[bIndex], &this->mem[i], this->memorySize-this->freeSpace);
-			bzero(&this->mem[this->memorySize-this->freeSpace], this->freeSpace);
-			timeElapsed+=this->memorySize-this->freeSpace;
-			return this->memorySize-this->freeSpace;
+			//which process is it
+			for(unsigned int j=0;j<processList.size();++j)
+			{
+				if(this->mem[i] == processList[j].processName)
+				{
+					memset(&this->mem[i-bCounter], processList[j].processName, processList[j].memSize);
+					bzero(&this->mem[i+(processList[j].memSize-bCounter)], bCounter);
+					i+=(processList[j].memSize-bCounter-1);
+					frames+=processList[j].memSize;
+					pList.push_back(processList[j].processName);
+					break;
+				}
+			}
+
+			bCounter=0;
 		}
 		else
-		{
-			//where is it
-			if(bIndex == -1) bIndex=i;
-		}
+			++bCounter;
 	}
 
-	return 0;
+	return frames;
 }
 
 void memory::print()

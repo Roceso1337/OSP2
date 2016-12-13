@@ -47,7 +47,7 @@ public:
 	bool addProcess(const process&, int, int);
 	void removeProcess(const process&, int);
 	void skip(const process&, int);
-	int defragment(int&);
+	int defragment(std::vector<char>&);
 
 	void print();
 };

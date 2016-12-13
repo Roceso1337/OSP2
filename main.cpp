@@ -88,8 +88,9 @@ void parse(std::vector<std::string> lines, memory& m){
 void TBD(memory m, int algoFlag)
 {
 	int timeElapsed=0;
+	int defragTime=0;
 
-	std::cout<<"time "<<timeElapsed<<"ms: ";
+	std::cout<<"time "<<(timeElapsed+defragTime)<<"ms: ";
 	if(algoFlag == memory::NEXTFIT)
 		std::cout<<"Simulator started (Contiguous -- Next-Fit)"<<std::endl;
 	else if(algoFlag == memory::BESTFIT)
@@ -106,7 +107,7 @@ void TBD(memory m, int algoFlag)
 
 		if(event == 0)
 		{
-			std::cout<<"time "<<timeElapsed<<"ms: ";
+			std::cout<<"time "<<(timeElapsed+defragTime)<<"ms: ";
 			std::cout<<"Process "<<p.processName<<" arrived (requires "<<p.memSize<<" frames)"<<std::endl;
 
 			if(m.getFreeSpace() >= p.memSize)
@@ -116,35 +117,42 @@ void TBD(memory m, int algoFlag)
 
 				if(sucess)
 				{
-					std::cout<<"time "<<timeElapsed<<"ms: ";
+					std::cout<<"time "<<(timeElapsed+defragTime)<<"ms: ";
 					std::cout<<"Placed process "<<p.processName<<":"<<std::endl;
 				}
 				else
 				{
-					std::cout<<"time "<<timeElapsed<<"ms: ";
+					std::cout<<"time "<<(timeElapsed+defragTime)<<"ms: ";
 					std::cout<<"Cannot place process "<<p.processName<<" -- starting defragmentation"<<std::endl;
 
 					//defragment if it didnt fit
-					int frames=m.defragment(timeElapsed);
+					std::vector<char> pList;
+					int frames=m.defragment(pList);
+					defragTime+=frames;
+					std::sort(pList.begin(), pList.end());
 
-					std::cout<<"time "<<timeElapsed<<"ms: ";
-					std::cout<<"Defragmentation complete (moved "<<frames<<" frames: B, C, D, E, F)"<<std::endl;
-
-					m.addProcess(p, algoFlag, timeElapsed);
+					std::cout<<"time "<<(timeElapsed+defragTime)<<"ms: ";
+					std::cout<<"Defragmentation complete (moved "<<frames<<" frames: ";
+					for(unsigned int i=0;i<pList.size();++i)
+					{
+						std::cout<<pList[i];
+						if(i < pList.size()-1) std::cout<<", ";
+					}
+					std::cout<<")"<<std::endl;
 				}
 			}
 			else
 			{
 				m.skip(p, timeElapsed);
 
-				std::cout<<"time "<<timeElapsed<<"ms: ";
+				std::cout<<"time "<<(timeElapsed+defragTime)<<"ms: ";
 				std::cout<<"Cannot place process "<<p.processName<<" -- skipped!"<<std::endl;
 			}
 		}
 		else if(event == 1)
 		{
 			//remove the process from the memory
-			std::cout<<"time "<<timeElapsed<<"ms: ";
+			std::cout<<"time "<<(timeElapsed+defragTime)<<"ms: ";
 			std::cout<<"Process "<<p.processName<<" removed:"<<std::endl;
 
 			m.removeProcess(p, timeElapsed);
@@ -153,7 +161,7 @@ void TBD(memory m, int algoFlag)
 		m.print();
 	}
 
-	std::cout<<"time "<<timeElapsed<<"ms: ";
+	std::cout<<"time "<<(timeElapsed+defragTime)<<"ms: ";
 	if(algoFlag == memory::NEXTFIT)
 		std::cout<<"Simulator ended (Contiguous -- Next-Fit)"<<std::endl;
 	else if(algoFlag == memory::BESTFIT)
