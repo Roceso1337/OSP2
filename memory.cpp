@@ -25,6 +25,7 @@ memory::memory()
 	this->frameSize=32;
     this->memorySize=256;
     this->freeSpace=this->memorySize;
+    this->lastIndex=0;
     this->mem=new char[this->memorySize];
     bzero(this->mem, this->memorySize);
 }
@@ -34,6 +35,7 @@ memory::memory(int newFrameSize, int newMemorySize)
 	this->frameSize=newFrameSize;
     this->memorySize=newMemorySize;
     this->freeSpace=this->memorySize;
+    this->lastIndex=0;
     this->mem=new char[this->memorySize];
     bzero(this->mem, this->memorySize);
 }
@@ -158,7 +160,6 @@ bool memory::addProcess(const process& p, int algoFlag, int timeElapsed)
 {
 	bool success=false;
 
-	bool before=true;//for next fit
 	int cMemSize=-1;//for best/worst fit current best/worst case memory block size
 	int bestIndex=-1;//for best/worst fit current best/worst case memory block index
 
@@ -166,44 +167,31 @@ bool memory::addProcess(const process& p, int algoFlag, int timeElapsed)
 	{
 		case memory::NEXTFIT:
 
-			//each character of the memory
-			for(int i=0;i<this->memorySize;++i)
+			if(this->lastIndex+p.memSize <= this->memorySize)
 			{
-				if(this->freeSpace == this->memorySize)
+				while((this->mem[this->lastIndex] >= 0x41) && (this->mem[this->lastIndex] <= 0x5A))
+					++this->lastIndex;
+
+				std::cout<<"DERP: "<<this->lastIndex<<std::endl;
+				memset(&this->mem[this->lastIndex], p.processName, p.memSize);
+				this->freeSpace-=p.memSize;
+				this->lastIndex+=p.memSize;
+				success=true;
+			}
+			else
+			{
+				//each character of the memory
+				for(this->lastIndex=0;this->lastIndex<this->memorySize;++this->lastIndex)
 				{
-					memset(&this->mem[i], p.processName, p.memSize);
-					this->freeSpace-=p.memSize;
-					success=true;
-					break;
-				}
-				else
-				{
-					if((this->mem[i] >= 0x41) && (this->mem[i] <= 0x5A))
+					if((this->mem[this->lastIndex] >= 0x41) && (this->mem[this->lastIndex] <= 0x5A))
 					{
-						//before
-						if((before) && (i-p.memSize >= 0))
+						if((this->lastIndex >= p.memSize) && (!success))
 						{
-							memset(&this->mem[i-p.memSize], p.processName, p.memSize);
+							std::cout<<"HERP: "<<this->lastIndex<<std::endl;
+							memset(&this->mem[this->lastIndex-p.memSize], p.processName, p.memSize);
 							this->freeSpace-=p.memSize;
 							success=true;
 							break;
-						}
-						else before=false;
-					}
-					else
-					{
-						if(!before)
-						{
-							//after
-							if(i+p.memSize <= this->memorySize)
-							{
-								memset(&this->mem[i], p.processName, p.memSize);
-								this->freeSpace-=p.memSize;
-								success=true;
-								break;
-							}
-							else
-								break;
 						}
 					}
 				}
@@ -417,5 +405,6 @@ void memory::clear()
 {
     this->freeSpace=this->memorySize;
     bzero(this->mem, this->memorySize);
+    this->lastIndex=0;
 	processHistory.clear();
 }

@@ -25,6 +25,7 @@ class memory
 	int frameSize;
     int memorySize;
     int freeSpace;
+    int lastIndex;
 
     char* mem;
 
