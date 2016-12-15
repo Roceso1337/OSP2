@@ -172,7 +172,6 @@ bool memory::addProcess(const process& p, int algoFlag, int timeElapsed)
 				while((this->mem[this->lastIndex] >= 0x41) && (this->mem[this->lastIndex] <= 0x5A))
 					++this->lastIndex;
 
-				std::cout<<"DERP: "<<this->lastIndex<<std::endl;
 				memset(&this->mem[this->lastIndex], p.processName, p.memSize);
 				this->freeSpace-=p.memSize;
 				this->lastIndex+=p.memSize;
@@ -187,12 +186,12 @@ bool memory::addProcess(const process& p, int algoFlag, int timeElapsed)
 					{
 						if((this->lastIndex >= p.memSize) && (!success))
 						{
-							std::cout<<"HERP: "<<this->lastIndex<<std::endl;
 							memset(&this->mem[this->lastIndex-p.memSize], p.processName, p.memSize);
 							this->freeSpace-=p.memSize;
+							this->lastIndex+=p.memSize;
 							success=true;
-							break;
 						}
+						break;
 					}
 				}
 			}
