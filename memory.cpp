@@ -83,7 +83,7 @@ bool memory::nextEvent(int& cTime, int& eventFlag, process& p)//cTime = current 
 					for(unsigned int k=firstIndexAtTime;k<processHistory.size();++k)
 					{
 						if((processHistory[k].processName == processList[i].processName)
-							&& (processHistory[k].event == 0))
+							&& ((processHistory[k].event == 0) || (processHistory[k].event == 2)))
 							alreadyRan=true;
 					}
 
@@ -128,17 +128,37 @@ bool memory::nextEvent(int& cTime, int& eventFlag, process& p)//cTime = current 
 				{
 					if(nextTime == -1)//first valid time we found
 					{
-						nextTime=processList[i].bursts[j].arrivalTime+processList[i].bursts[j].duration;
-						p=processList[i];
-						eventFlag=1;
+						for(unsigned int k=processHistory.size()-1;k>=0;--k)
+						{
+							if(processHistory[k].processName == processList[i].processName)
+							{
+								if(processHistory[k].event == 0)
+								{
+									nextTime=processList[i].bursts[j].arrivalTime+processList[i].bursts[j].duration;
+									p=processList[i];
+									eventFlag=1;
+								}
+								break;
+							}
+						}
 					}
 					else
 					{
 						if(processList[i].bursts[j].arrivalTime+processList[i].bursts[j].duration < nextTime)
 						{
-							nextTime=processList[i].bursts[j].arrivalTime+processList[i].bursts[j].duration;
-							p=processList[i];
-							eventFlag=1;
+							for(unsigned int k=processHistory.size()-1;k>=0;--k)
+							{
+								if(processHistory[k].processName == processList[i].processName)
+								{
+									if(processHistory[k].event == 0)
+									{
+										nextTime=processList[i].bursts[j].arrivalTime+processList[i].bursts[j].duration;
+										p=processList[i];
+										eventFlag=1;
+									}
+									break;
+								}
+							}
 						}
 					}
 				}
@@ -352,7 +372,7 @@ void memory::removeProcess(const process& p, int timeElapsed)
 
 void memory::skip(const process& p, int timeElapsed)
 {
-	pHistoryData hist(timeElapsed, 0, p.processName);
+	pHistoryData hist(timeElapsed, 2, p.processName);
 	processHistory.push_back(hist);
 }
 

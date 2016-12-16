@@ -109,7 +109,7 @@ void TBD(memory m, int algoFlag)
 		process p;
 		m.nextEvent(timeElapsed, event, p);
 
-		if(event == 0)
+		if((event == 0) || (event == 2))
 		{
 			std::cout<<"time "<<(timeElapsed+defragTime)<<"ms: ";
 			std::cout<<"Process "<<p.processName<<" arrived (requires "<<p.memSize<<" frames)"<<std::endl;
