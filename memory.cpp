@@ -3,6 +3,7 @@
 const int memory::NEXTFIT=0;
 const int memory::BESTFIT=1;
 const int memory::WORSTFIT=2;
+const int memory::NONCONTIG=3;
 
 //pHistoryData
 pHistoryData::pHistoryData()
@@ -336,6 +337,25 @@ bool memory::addProcess(const process& p, int algoFlag, int timeElapsed)
 				this->freeSpace-=p.memSize;
 				success=true;
 			}
+
+			break;
+
+		case memory::NONCONTIG:
+            if (this->freeSpace >= p.memSize){
+                int memCounter = p.memSize;
+				for (int i = 0; i < this->memorySize;++i){
+					if(!(this->mem[i] >= 0x41) && (this->mem[i] <= 0x5A)){
+                        this->mem[i] = p.processName;
+                        memCounter--;
+                    }
+
+                    if (memCounter <= 0){
+                        success = true;
+                        this->freeSpace-=p.memSize;    
+                        break;
+                    }
+				}
+            }
 
 			break;
 	}
