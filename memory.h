@@ -33,6 +33,7 @@ public:
 	static const int NEXTFIT;
 	static const int BESTFIT;
 	static const int WORSTFIT;
+    static const int NONCONTIG;
 
 	std::vector<process> processList;
 	std::vector<pHistoryData> processHistory;

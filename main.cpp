@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
 		}
 
         parsePhys(lines, m);
-        for(int i=0;i<3;++i)
+        for(int i=0;i<4;++i)
         {
             m.clear();
             TBD(m, i);
@@ -43,6 +43,7 @@ int main(int argc, char *argv[])
 			lines.push_back(line);
 		}
 
+        /*
         parseVirtual(lines, virtualMem);
         handleVirt(virtualMem, 0);
         std::cout << std::endl;
@@ -50,6 +51,7 @@ int main(int argc, char *argv[])
         std::cout << std::endl;
         handleVirt(virtualMem, 2);
         std::cout << std::endl;
+        */
 
         fd.close();
 	} else {
@@ -418,6 +420,8 @@ void TBD(memory m, int algoFlag)
 		std::cout<<"Simulator started (Contiguous -- Best-Fit)"<<std::endl;
 	else if(algoFlag == memory::WORSTFIT)
 		std::cout<<"Simulator started (Contiguous -- Worst-Fit)"<<std::endl;
+    else if(algoFlag == memory::NONCONTIG)
+		std::cout<<"Simulator started (Non-contiguous)"<<std::endl;
 
     bool defrag = false;
 
