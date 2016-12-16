@@ -5,10 +5,10 @@
 
 int main(int argc, char *argv[])
 {
-	if(argc < 2) err("Invalid arguments\n");
+	if(argc < 2 || argc > 3) err("Invalid arguments\n");
 
-	std::string fname=argv[1];
-	std::ifstream fd(fname.c_str());
+	std::string fname1=argv[1];
+	std::ifstream fd(fname1.c_str());
 	std::string line;
 	std::vector<std::string> lines;
 	memory m;
@@ -18,20 +18,37 @@ int main(int argc, char *argv[])
 			lines.push_back(line);
 		}
 
-        parse(lines, m);
+        //parsePhys(lines, m);
 
         fd.close();
-	}
-
-
-    /*testing parsing
-    for (unsigned int i = 0; i < m.processList.size(); i++){
-        std::cout << m.processList[i].processName << m.processList[i].memSize << std::endl;
-        for (unsigned int j = 0; j < m.processList[i].bursts.size(); j++){
-            std::cout << m.processList[i].bursts[j].arrivalTime << " " << m.processList[i].bursts[j].duration << std::endl;
-        }
+	} else {
+        err("Invalid file\n");
     }
-    */
+
+    line.clear();
+    lines.clear();
+	std::string fname2=argv[2];
+	fd.open(fname2.c_str());
+
+    std::vector<int> virtualMem;
+
+	if (fd != NULL){
+		while (std::getline(fd, line)){
+			lines.push_back(line);
+		}
+
+        parseVirtual(lines, virtualMem);
+        handleVirt(virtualMem, 0);
+        std::cout << std::endl;
+        handleVirt(virtualMem, 1);
+        std::cout << std::endl;
+        handleVirt(virtualMem, 2);
+        std::cout << std::endl;
+
+        fd.close();
+	} else {
+        err("Invalid file\n");
+    }
 
 	for(int i=0;i<3;++i)
 	{
@@ -43,7 +60,7 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
-void parse(std::vector<std::string> lines, memory& m){
+void parsePhys(std::vector<std::string>& lines, memory& m){
 	bool first = true;
 	//int numProcesses = 0;
 	  
@@ -86,7 +103,308 @@ void parse(std::vector<std::string> lines, memory& m){
 		}  
         
         m.processList.push_back(p);
+        delete(parseString);
 	}
+}
+
+void parseVirtual(std::vector<std::string>& lines, std::vector<int>& virtualMem){
+	for (unsigned int i = 0; i < lines.size(); ++i){
+		char* parseString = new char [lines[i].length()+1];
+        std::strcpy(parseString, lines[i].c_str()); 
+
+		char* splitText = strtok(parseString, " ");
+        virtualMem.push_back(atoi(splitText));
+        splitText = strtok(NULL, " ");
+        
+		while (splitText != NULL){
+			virtualMem.push_back(atoi(splitText));
+			splitText = strtok(NULL, " ");
+		}
+
+        delete(parseString);
+    }
+}
+
+void handleVirt(std::vector<int>& virtualMem, int algoFlag){
+    /*
+     * 0 = Optimal
+     * 1 = LRU
+     * 2 = LFU
+     */
+    const int F = 3;
+
+    if (algoFlag == 0) {
+        std::cout << "Simulating OPT with fixed frame size of " << F << std::endl;
+        optimal(virtualMem, F);
+    } else if (algoFlag == 1) {
+        std::cout << "Simulating LRU with fixed frame size of " << F << std::endl;
+        lru(virtualMem, F);
+    } else if (algoFlag == 2) {
+        std::cout << "Simulating LFU with fixed frame size of " << F << std::endl;
+        lfu(virtualMem, F);
+    }
+}
+
+void optimal(std::vector<int>& virtualMem, const int F){
+    int mem[F] = {-1, -1, -1};
+    int pageFaults = 0;
+    int memFill = 0;
+
+    for (unsigned int i = 0; i < virtualMem.size(); i++){
+        std::ostringstream oss;
+        oss << "referencing page " <<  virtualMem[i];
+
+        // case where there are unfilled spots
+        if (memFill < F){
+            bool filled = false;
+            for (int j = 0; j < F; j++){
+                if (mem[j] == virtualMem[i]){
+                    break;
+                }
+                if (mem[j] == -1){
+                    pageFaults++; 
+                    mem[j] = virtualMem[i];
+                    memFill++;
+                    oss << "[mem: ";
+                    for (int k = 0; k < F; k++){
+                        if (mem[k] == - 1)
+                            oss << ".";
+                        else
+                            oss << mem[k];
+                        if (k != F - 1)
+                            oss << " ";
+                    }
+                    oss <<  "] PAGE FAULT (no victim page)";
+                    filled = true;
+                }
+
+                if (filled) {
+                    std::cout << oss.str() << std::endl;
+                    break;
+                }
+            }
+        } else { // all spots are already filled, begin OPT
+            bool exists = false;
+
+            // make sure the mem isnt already included
+            for (int j = 0; j < F; j++){
+                if (mem[j] == virtualMem[i]){
+                    exists = true;
+                    break;
+                }
+            }
+
+            if (exists){
+                continue;
+            }
+
+            int distances[F] = {2147483647, 2147483647, 2147483647};
+            for (int j = 0; j < F; j++){ // look for replacement
+                for (unsigned int k = i; k < virtualMem.size(); k++){
+                    if (mem[j] == virtualMem[k]){
+                        distances[j] = (int)(k) - i;
+                        break;
+                    }
+                }
+            }
+
+            int min = 0;
+            for (int j = 1; j < F; j++){
+                if (distances[j] > distances[min] || (distances[j] == distances[min] && mem[j] < mem[min])){
+                    min = j;
+                }
+            }
+            int fault = mem[min];
+            mem[min] = virtualMem[i];
+
+            oss << "[mem: ";
+            for (int k = 0; k < F; k++){
+                oss << mem[k];
+                if (k != F - 1)
+                    oss << " ";
+            }
+            oss <<  "] PAGE FAULT (victim page " << fault << ")";
+            std::cout << oss.str() << std::endl;
+
+            pageFaults++;
+        } 
+    }
+
+    std::cout << "End of OPT simulation (" << pageFaults << " page faults)" << std::endl;
+}
+
+void lru(std::vector<int>& virtualMem, const int F){
+    int mem[F] = {-1, -1, -1};
+    int pageFaults = 0;
+    int memFill = 0;
+
+    for (unsigned int i = 0; i < virtualMem.size(); i++){
+        std::ostringstream oss;
+        oss << "referencing page " <<  virtualMem[i];
+
+        // case where there are unfilled spots
+        if (memFill < F){
+            bool filled = false;
+            for (int j = 0; j < F; j++){
+                if (mem[j] == virtualMem[i]){
+                    break;
+                }
+                if (mem[j] == -1){
+                    pageFaults++; 
+                    mem[j] = virtualMem[i];
+                    memFill++;
+                    oss << "[mem: ";
+                    for (int k = 0; k < F; k++){
+                        if (mem[k] == - 1)
+                            oss << ".";
+                        else
+                            oss << mem[k];
+                        if (k != F - 1)
+                            oss << " ";
+                    }
+                    oss <<  "] PAGE FAULT (no victim page)";
+                    filled = true;
+                }
+
+                if (filled) {
+                    std::cout << oss.str() << std::endl;
+                    break;
+                }
+            }
+        } else { // all spots are already filled, begin OPT
+            bool exists = false;
+
+            // make sure the mem isnt already included
+            for (int j = 0; j < F; j++){
+                if (mem[j] == virtualMem[i]){
+                    exists = true;
+                    break;
+                }
+            }
+
+            if (exists){
+                continue;
+            }
+
+            int distances[F] = {2147483647, 2147483647, 2147483647};
+            for (int j = 0; j < F; j++){ // look for replacement
+                for (unsigned int k = i; k >= 0; k--){
+                    if (mem[j] == virtualMem[k]){
+                        distances[j] = i - (int)k;
+                        break;
+                    }
+                }
+            }
+
+            int min = 0;
+            for (int j = 1; j < F; j++){
+                if (distances[j] > distances[min] || (distances[j] == distances[min] && mem[j] < mem[min])){
+                    min = j;
+                }
+            }
+            int fault = mem[min];
+            mem[min] = virtualMem[i];
+
+            oss << "[mem: ";
+            for (int k = 0; k < F; k++){
+                oss << mem[k];
+                if (k != F - 1)
+                    oss << " ";
+            }
+            oss <<  "] PAGE FAULT (victim page " << fault << ")";
+            std::cout << oss.str() << std::endl;
+
+            pageFaults++;
+        } 
+    }
+
+    std::cout << "End of LRU simulation (" << pageFaults << " page faults)" << std::endl;
+}
+
+void lfu(std::vector<int>& virtualMem, const int F){
+    int mem[F] = {-1, -1, -1};
+    int pageFaults = 0;
+    int memFill = 0;
+    std::map<int, int> occurences;
+
+    for (unsigned int i = 0; i < virtualMem.size(); i++){
+        std::ostringstream oss;
+        oss << "referencing page " <<  virtualMem[i];
+
+        // case where there are unfilled spots
+        if (memFill < F){
+            bool filled = false;
+            for (int j = 0; j < F; j++){
+                if (mem[j] == virtualMem[i]){
+                    occurences[virtualMem[i]]++;
+                    break;
+                }
+                if (mem[j] == -1){
+                    pageFaults++; 
+                    mem[j] = virtualMem[i];
+                    memFill++;
+                    oss << "[mem: ";
+                    for (int k = 0; k < F; k++){
+                        if (mem[k] == - 1)
+                            oss << ".";
+                        else
+                            oss << mem[k];
+                        if (k != F - 1)
+                            oss << " ";
+                    }
+                    oss <<  "] PAGE FAULT (no victim page)";
+                    filled = true;
+                    occurences[mem[j]] =  1;
+                }
+
+                if (filled) {
+                    std::cout << oss.str() << std::endl;
+                    break;
+                }
+            }
+        } else { // all spots are already filled, begin OPT
+
+            bool exists = false;
+
+            // make sure the mem isnt already included
+            for (int j = 0; j < F; j++){
+                if (mem[j] == virtualMem[i]){
+                    occurences[virtualMem[i]]++;
+                    exists = true;
+                    break;
+                }
+            }
+
+            if (exists){
+                continue;
+            }
+
+            int min = 0;
+            for (int j = 1; j < F; j++){
+                if (occurences[mem[j]] < occurences[mem[min]] || (occurences[mem[j]] == occurences[mem[min]]
+                            && mem[j] < mem[min])){
+                    min = j;
+                }
+            }
+            occurences[mem[min]] = 1;
+            int fault = mem[min];
+            mem[min] = virtualMem[i];
+            occurences[mem[min]] = 1;
+
+            oss << "[mem: ";
+            for (int k = 0; k < F; k++){
+                oss << mem[k];
+                if (k != F - 1)
+                    oss << " ";
+            }
+            oss <<  "] PAGE FAULT (victim page " << fault << ")";
+            std::cout << oss.str() << std::endl;
+
+            pageFaults++;
+        } 
+    }
+
+    std::cout << "End of LFU simulation (" << pageFaults << " page faults)" << std::endl;
 }
 
 void TBD(memory m, int algoFlag)
