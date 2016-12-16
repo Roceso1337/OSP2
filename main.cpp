@@ -5,7 +5,7 @@
 
 int main(int argc, char *argv[])
 {
-	if(argc < 2 || argc > 3) err("Invalid arguments\n");
+	if(argc != 3) err("Invalid arguments\n");
 
 	std::string fname1=argv[1];
 	std::ifstream fd(fname1.c_str());
@@ -18,7 +18,13 @@ int main(int argc, char *argv[])
 			lines.push_back(line);
 		}
 
-        //parsePhys(lines, m);
+        parsePhys(lines, m);
+        for(int i=0;i<3;++i)
+        {
+            m.clear();
+            TBD(m, i);
+            std::cout<<std::endl;
+        }
 
         fd.close();
 	} else {
@@ -49,13 +55,6 @@ int main(int argc, char *argv[])
 	} else {
         err("Invalid file\n");
     }
-
-	for(int i=0;i<3;++i)
-	{
-		m.clear();
-		TBD(m, i);
-		std::cout<<std::endl;
-	}
 
 	return 0;
 }
@@ -420,6 +419,8 @@ void TBD(memory m, int algoFlag)
 	else if(algoFlag == memory::WORSTFIT)
 		std::cout<<"Simulator started (Contiguous -- Worst-Fit)"<<std::endl;
 
+    bool defrag = false;
+
 	while(!m.isFinished(timeElapsed))
 	{
 		//get the next event
@@ -430,7 +431,12 @@ void TBD(memory m, int algoFlag)
 		if((event == 0) || (event == 2))
 		{
 			std::cout<<"time "<<(timeElapsed+defragTime)<<"ms: ";
-			std::cout<<"Process "<<p.processName<<" arrived (requires "<<p.memSize<<" frames)"<<std::endl;
+
+            if (!defrag){
+			    std::cout<<"Process "<<p.processName<<" arrived (requires "<<p.memSize<<" frames)"<<std::endl;
+            } else {
+                defrag = false;
+            }
 
 			if(m.getFreeSpace() >= p.memSize)
 			{
@@ -461,6 +467,8 @@ void TBD(memory m, int algoFlag)
 						if(i < pList.size()-1) std::cout<<", ";
 					}
 					std::cout<<")"<<std::endl;
+
+                    defrag = true;
 				}
 			}
 			else
