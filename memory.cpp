@@ -77,36 +77,41 @@ bool memory::nextEvent(int& cTime, int& eventFlag, process& p)//cTime = current 
 			if(processList[i].bursts[j].arrivalTime >= cTime)
 			{
 				//check if we already ran this process's burst
+				bool alreadyRan=false;
 				if(firstIndexAtTime > -1)
 				{
-					bool alreadyRan=false;
 					for(unsigned int k=firstIndexAtTime;k<processHistory.size();++k)
 					{
 						if((processHistory[k].processName == processList[i].processName)
 							&& ((processHistory[k].event == 0) || (processHistory[k].event == 2)))
 							alreadyRan=true;
 					}
-
-					if(alreadyRan) continue;//next process/burst
 				}
 
-				if(nextTime == -1)//first valid time we found
+				//next process/burst
+				if(!alreadyRan)
 				{
-					nextTime=processList[i].bursts[j].arrivalTime;
-					p=processList[i];
-					eventFlag=0;
-				}
-				else
-				{
-					if(processList[i].bursts[j].arrivalTime < nextTime)
+					if(nextTime == -1)//first valid time we found
 					{
 						nextTime=processList[i].bursts[j].arrivalTime;
 						p=processList[i];
 						eventFlag=0;
 					}
+					else
+					{
+						if(processList[i].bursts[j].arrivalTime < nextTime)
+						{
+							nextTime=processList[i].bursts[j].arrivalTime;
+							p=processList[i];
+							eventFlag=0;
+						}
+					}
 				}
 			}
-			else
+
+			//process already arrived
+			//maybe the duration of the process is almost over (process exit)
+			if(processList[i].bursts[j].arrivalTime+processList[i].bursts[j].duration >= cTime)
 			{
 				//check if we already ran this process
 				if(firstIndexAtTime > -1)
@@ -121,12 +126,26 @@ bool memory::nextEvent(int& cTime, int& eventFlag, process& p)//cTime = current 
 
 					if(alreadyRan) continue;//next process
 				}
-
-				//thread already arrived
-				//maybe the duration of the process is almost over (process exit)
-				if(processList[i].bursts[j].arrivalTime+processList[i].bursts[j].duration >= cTime)
+				
+				if(nextTime == -1)//first valid time we found
 				{
-					if(nextTime == -1)//first valid time we found
+					for(unsigned int k=processHistory.size()-1;k>=0;--k)
+					{
+						if(processHistory[k].processName == processList[i].processName)
+						{
+							if(processHistory[k].event == 0)
+							{
+								nextTime=processList[i].bursts[j].arrivalTime+processList[i].bursts[j].duration;
+								p=processList[i];
+								eventFlag=1;
+							}
+							break;
+						}
+					}
+				}
+				else
+				{
+					if(processList[i].bursts[j].arrivalTime+processList[i].bursts[j].duration < nextTime)
 					{
 						for(unsigned int k=processHistory.size()-1;k>=0;--k)
 						{
@@ -139,25 +158,6 @@ bool memory::nextEvent(int& cTime, int& eventFlag, process& p)//cTime = current 
 									eventFlag=1;
 								}
 								break;
-							}
-						}
-					}
-					else
-					{
-						if(processList[i].bursts[j].arrivalTime+processList[i].bursts[j].duration < nextTime)
-						{
-							for(unsigned int k=processHistory.size()-1;k>=0;--k)
-							{
-								if(processHistory[k].processName == processList[i].processName)
-								{
-									if(processHistory[k].event == 0)
-									{
-										nextTime=processList[i].bursts[j].arrivalTime+processList[i].bursts[j].duration;
-										p=processList[i];
-										eventFlag=1;
-									}
-									break;
-								}
 							}
 						}
 					}
