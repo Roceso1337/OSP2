@@ -25,6 +25,7 @@ class memory
 	int frameSize;
     int memorySize;
     int freeSpace;
+    int lastIndex;
 
     char* mem;
 
@@ -32,6 +33,7 @@ public:
 	static const int NEXTFIT;
 	static const int BESTFIT;
 	static const int WORSTFIT;
+    static const int NONCONTIG;
 
 	std::vector<process> processList;
 	std::vector<pHistoryData> processHistory;
@@ -47,9 +49,10 @@ public:
 	bool addProcess(const process&, int, int);
 	void removeProcess(const process&, int);
 	void skip(const process&, int);
-	void defragment(const process&, int);
+	int defragment(std::vector<char>&);
 
 	void print();
+	void clear();
 };
 
 #endif

@@ -10,6 +10,7 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
+#include <algorithm>
 #include <map>
 #include "memory.h"
 
@@ -21,7 +22,7 @@ void handleVirt(std::vector<int>&, int);
 void optimal(std::vector<int>&, const int);
 void lru(std::vector<int>&, const int);
 void lfu(std::vector<int>&, const int);
-void TBD(memory, int);
+void letsgetphysical(memory, int);
 std::string intTOstring(int);
 std::string floatTOstring(float);
 void err(const char*);

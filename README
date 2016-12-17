@@ -2,4 +2,4 @@ Robert Carneiro, Dan Sze
 Project 2
 
 How to run:
-./exec
+./exec physicalinput.txt virtualinput.txt
