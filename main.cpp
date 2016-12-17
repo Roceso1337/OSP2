@@ -1,5 +1,5 @@
-//Daniel Sze
-//Robert Carneiro
+//Daniel Sze / RCS: szed
+//Robert Carneiro / RCS: carner5
 #include "main.h"
 #include "memory.h"
 
@@ -169,7 +169,7 @@ void optimal(std::vector<int>& virtualMem, const int F){
 					pageFaults++; 
 					mem[j] = virtualMem[i];
 					memFill++;
-					oss << "[mem: ";
+					oss << " [mem: ";
 					for (int k = 0; k < F; k++){
 						if (mem[k] == - 1)
 							oss << ".";
@@ -263,7 +263,7 @@ void lru(std::vector<int>& virtualMem, const int F){
 					pageFaults++; 
 					mem[j] = virtualMem[i];
 					memFill++;
-					oss << "[mem: ";
+					oss << " [mem: ";
 					for (int k = 0; k < F; k++){
 						if (mem[k] == - 1)
 							oss << ".";
@@ -289,7 +289,6 @@ void lru(std::vector<int>& virtualMem, const int F){
 				if (mem[j] == virtualMem[i]){
 					exists = true;
 					break;
-
 				}
 			}
 
@@ -408,7 +407,7 @@ void lfu(std::vector<int>& virtualMem, const int F){
 			mem[min] = virtualMem[i];
 			occurences[mem[min]] = 1;
 
-			oss << "[mem: ";
+			oss << " [mem: ";
 			for (int k = 0; k < F; k++){
 				oss << mem[k];
 				if (k != F - 1)
