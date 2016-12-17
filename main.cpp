@@ -147,7 +147,10 @@ void handleVirt(std::vector<int>& virtualMem, int algoFlag){
 }
 
 void optimal(std::vector<int>& virtualMem, const int F){
-	int mem[F] = {-1, -1, -1};
+	int mem[F];
+    for (int i = 0; i < F; i++)
+        mem[i] = -1;
+
 	int pageFaults = 0;
 	int memFill = 0;
 
@@ -199,7 +202,10 @@ void optimal(std::vector<int>& virtualMem, const int F){
 				continue;
 			}
 
-			int distances[F] = {2147483647, 2147483647, 2147483647};
+            int distances[F];
+            for (int j = 0; j < F; j++)
+                distances[j] = 2147483647;
+
 			for (int j = 0; j < F; j++){ // look for replacement
 				for (unsigned int k = i; k < virtualMem.size(); k++){
 					if (mem[j] == virtualMem[k]){
@@ -235,7 +241,10 @@ void optimal(std::vector<int>& virtualMem, const int F){
 }
 
 void lru(std::vector<int>& virtualMem, const int F){
-	int mem[F] = {-1, -1, -1};
+	int mem[F];
+    for (int i = 0; i < F; i++)
+        mem[i] = -1;
+
 	int pageFaults = 0;
 	int memFill = 0;
 
@@ -280,6 +289,7 @@ void lru(std::vector<int>& virtualMem, const int F){
 				if (mem[j] == virtualMem[i]){
 					exists = true;
 					break;
+
 				}
 			}
 
@@ -287,7 +297,10 @@ void lru(std::vector<int>& virtualMem, const int F){
 				continue;
 			}
 
-			int distances[F] = {2147483647, 2147483647, 2147483647};
+            int distances[F];
+            for (int j = 0; j < F; j++)
+                distances[j] = 2147483647;
+
 			for (int j = 0; j < F; j++){ // look for replacement
 				for (unsigned int k = i; k >= 0; k--){
 					if (mem[j] == virtualMem[k]){
@@ -323,7 +336,10 @@ void lru(std::vector<int>& virtualMem, const int F){
 }
 
 void lfu(std::vector<int>& virtualMem, const int F){
-	int mem[F] = {-1, -1, -1};
+	int mem[F];
+    for (int i = 0; i < F; i++)
+        mem[i] = -1;
+
 	int pageFaults = 0;
 	int memFill = 0;
 	std::map<int, int> occurences;
