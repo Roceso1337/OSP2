@@ -326,6 +326,8 @@ bool memory::addProcess(const process& p, int algoFlag, int timeElapsed)
 			if((this->lastIndex+p.memSize <= this->memorySize)
 				&& ((nextBlock == -1) || (this->lastIndex+p.memSize < nextBlock)))
 			{
+				if(nextBlock == -1) this->lastIndex=0;
+
 				while((this->mem[this->lastIndex] >= 0x41) && (this->mem[this->lastIndex] <= 0x5A))
 					++this->lastIndex;
 
@@ -362,7 +364,8 @@ bool memory::addProcess(const process& p, int algoFlag, int timeElapsed)
 						&& (this->mem[this->lastIndex] >= 0x41) && (this->mem[this->lastIndex] <= 0x5A))
 						++this->lastIndex;
 
-					if(this->lastIndex+p.memSize <= this->memorySize)
+					if((this->lastIndex+p.memSize <= this->memorySize)
+						&& ((nextBlock == -1) || (this->lastIndex+p.memSize < nextBlock)))
 					{
 						memset(&this->mem[this->lastIndex], p.processName, p.memSize);
 						this->freeSpace-=p.memSize;
