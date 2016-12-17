@@ -235,56 +235,52 @@ bool memory::addProcess(const process& p, int algoFlag, int timeElapsed)
 			break;
 		case memory::BESTFIT:
 
-			//each character of the memory
-			for(int i=0;i<this->memorySize;++i)
+			if(this->lastIndex+p.memSize <= this->memorySize)
 			{
-				if(this->freeSpace == this->memorySize)
+				while((this->mem[this->lastIndex] >= 0x41) && (this->mem[this->lastIndex] <= 0x5A))
+					++this->lastIndex;
+
+				while((this->lastIndex > 0)
+					&& !((this->mem[this->lastIndex-1] >= 0x41) && (this->mem[this->lastIndex-1] <= 0x5A)))
+					--this->lastIndex;
+
+				memset(&this->mem[this->lastIndex], p.processName, p.memSize);
+				this->freeSpace-=p.memSize;
+				this->lastIndex+=p.memSize;
+				success=true;
+			}
+			else
+			{
+				//each character of the memory
+				for(this->lastIndex=0;this->lastIndex<this->memorySize;++this->lastIndex)
 				{
-					memset(&this->mem[i], p.processName, p.memSize);
-					this->freeSpace-=p.memSize;
-					success=true;
-					break;
-				}
-				else
-				{
-					if(!((this->mem[i] >= 0x41) && (this->mem[i] <= 0x5A)))
+					if((this->mem[this->lastIndex] >= 0x41) && (this->mem[this->lastIndex] <= 0x5A))
 					{
-						if(i+p.memSize < this->memorySize)
+						if((this->lastIndex >= p.memSize) && (!success))
 						{
-							//now check if theres enough space
-							int k=0;//counter
-							while(!((this->mem[k] >= 0x41) && (this->mem[k] <= 0x5A)))
-							{
-								if(k >= cMemSize) break;//memory is too big or below already available memory
-
-								++k;
-							}
-
-							//we got the size of the empty mem block, lets check if its the one
-							if(cMemSize == -1)
-							{
-								cMemSize=k;
-								bestIndex=i;
-							}
-							else
-							{
-								if(k < cMemSize)
-								{
-									cMemSize=k;
-									bestIndex=i;
-								}
-							}
+							memset(&this->mem[this->lastIndex-p.memSize], p.processName, p.memSize);
+							this->freeSpace-=p.memSize;
+							this->lastIndex+=p.memSize;
+							success=true;
 						}
+						break;
 					}
 				}
-			}
 
-			//we made it! add it to the mem
-			if(bestIndex > -1)
-			{
-				memset(&this->mem[bestIndex], p.processName, p.memSize);
-				this->freeSpace-=p.memSize;
-				success=true;
+				if(!success)
+				{
+					while((this->lastIndex < this->memorySize)
+						&& (this->mem[this->lastIndex] >= 0x41) && (this->mem[this->lastIndex] <= 0x5A))
+						++this->lastIndex;
+
+					if(this->lastIndex+p.memSize <= this->memorySize)
+					{
+						memset(&this->mem[this->lastIndex], p.processName, p.memSize);
+						this->freeSpace-=p.memSize;
+						this->lastIndex+=p.memSize;
+						success=true;
+					}
+				}
 			}
 
 			break;
