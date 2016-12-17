@@ -181,14 +181,26 @@ bool memory::addProcess(const process& p, int algoFlag, int timeElapsed)
 {
 	bool success=false;
 
-	int cMemSize=-1;//for best/worst fit current best/worst case memory block size
-	int bestIndex=-1;//for best/worst fit current best/worst case memory block index
+	int nextBlock=-1;
 
 	switch(algoFlag)
 	{
 		case memory::NEXTFIT:
 
-			if(this->lastIndex+p.memSize <= this->memorySize)
+			if(!((this->mem[this->lastIndex] >= 0x41) && (this->mem[this->lastIndex] <= 0x5A)))
+			{
+				for(int i=this->lastIndex;i<=this->memorySize;++i)
+				{
+					if((this->mem[i] >= 0x41) && (this->mem[i] <= 0x5A))
+					{
+						nextBlock=i;
+						break;
+					}
+				}
+			}
+
+			if((this->lastIndex+p.memSize <= this->memorySize)
+				&& ((nextBlock == -1) || (this->lastIndex+p.memSize < nextBlock)))
 			{
 				while((this->mem[this->lastIndex] >= 0x41) && (this->mem[this->lastIndex] <= 0x5A))
 					++this->lastIndex;
@@ -235,7 +247,20 @@ bool memory::addProcess(const process& p, int algoFlag, int timeElapsed)
 			break;
 		case memory::BESTFIT:
 
-			if(this->lastIndex+p.memSize <= this->memorySize)
+			if(!((this->mem[this->lastIndex] >= 0x41) && (this->mem[this->lastIndex] <= 0x5A)))
+			{
+				for(int i=this->lastIndex;i<=this->memorySize;++i)
+				{
+					if((this->mem[i] >= 0x41) && (this->mem[i] <= 0x5A))
+					{
+						nextBlock=i;
+						break;
+					}
+				}
+			}
+
+			if((this->lastIndex+p.memSize <= this->memorySize)
+				&& ((nextBlock == -1) || (this->lastIndex+p.memSize < nextBlock)))
 			{
 				while((this->mem[this->lastIndex] >= 0x41) && (this->mem[this->lastIndex] <= 0x5A))
 					++this->lastIndex;
@@ -286,52 +311,68 @@ bool memory::addProcess(const process& p, int algoFlag, int timeElapsed)
 			break;
 		case memory::WORSTFIT:
 
-			//each character of the memory
-			for(int i=0;i<this->memorySize;++i)
+			if(!((this->mem[this->lastIndex] >= 0x41) && (this->mem[this->lastIndex] <= 0x5A)))
 			{
-				if(this->freeSpace == this->memorySize)
+				for(int i=this->lastIndex;i<=this->memorySize;++i)
 				{
-					memset(&this->mem[i], p.processName, p.memSize);
-					this->freeSpace-=p.memSize;
-					success=true;
-					break;
-				}
-				else
-				{
-					if(!((this->mem[i] >= 0x41) && (this->mem[i] <= 0x5A)))
+					if((this->mem[i] >= 0x41) && (this->mem[i] <= 0x5A))
 					{
-						if(i+p.memSize < this->memorySize)
-						{
-							//now check if theres enough space
-							int k=0;//counter
-							while(!((this->mem[k] >= 0x41) && (this->mem[k] <= 0x5A)))
-								++k;
-
-							//we got the size of the empty mem block, lets check if its the one
-							if(cMemSize == -1)
-							{
-								cMemSize=k;
-								bestIndex=i;
-							}
-							else
-							{
-								if(k > cMemSize)
-								{
-									cMemSize=k;
-									bestIndex=i;
-								}
-							}
-						}
+						nextBlock=i;
+						break;
 					}
 				}
 			}
 
-			//we made it! add it to the mem
-			if(bestIndex > -1)
+			if((this->lastIndex+p.memSize <= this->memorySize)
+				&& ((nextBlock == -1) || (this->lastIndex+p.memSize < nextBlock)))
 			{
-				memset(&this->mem[bestIndex], p.processName, p.memSize);
+				if(nextBlock == -1) this->lastIndex=0;
+
+				while((this->mem[this->lastIndex] >= 0x41) && (this->mem[this->lastIndex] <= 0x5A))
+					++this->lastIndex;
+
+				while((this->lastIndex > 0)
+					&& !((this->mem[this->lastIndex-1] >= 0x41) && (this->mem[this->lastIndex-1] <= 0x5A)))
+					--this->lastIndex;
+
+				memset(&this->mem[this->lastIndex], p.processName, p.memSize);
 				this->freeSpace-=p.memSize;
+				this->lastIndex+=p.memSize;
 				success=true;
+			}
+			else
+			{
+				//each character of the memory
+				for(this->lastIndex=0;this->lastIndex<this->memorySize;++this->lastIndex)
+				{
+					if((this->mem[this->lastIndex] >= 0x41) && (this->mem[this->lastIndex] <= 0x5A))
+					{
+						if((this->lastIndex >= p.memSize) && (!success))
+						{
+							memset(&this->mem[this->lastIndex-p.memSize], p.processName, p.memSize);
+							this->freeSpace-=p.memSize;
+							this->lastIndex+=p.memSize;
+							success=true;
+						}
+						break;
+					}
+				}
+
+				if(!success)
+				{
+					while((this->lastIndex < this->memorySize)
+						&& (this->mem[this->lastIndex] >= 0x41) && (this->mem[this->lastIndex] <= 0x5A))
+						++this->lastIndex;
+
+					if((this->lastIndex+p.memSize <= this->memorySize)
+						&& ((nextBlock == -1) || (this->lastIndex+p.memSize < nextBlock)))
+					{
+						memset(&this->mem[this->lastIndex], p.processName, p.memSize);
+						this->freeSpace-=p.memSize;
+						this->lastIndex+=p.memSize;
+						success=true;
+					}
+				}
 			}
 
 			break;
@@ -407,12 +448,15 @@ int memory::defragment(std::vector<char>& pList)
 			{
 				if(this->mem[i] == processList[j].processName)
 				{
-					memset(&this->mem[i-bCounter], processList[j].processName, processList[j].memSize);
-					bzero(&this->mem[i+(processList[j].memSize-bCounter)], bCounter);
-					i+=(processList[j].memSize-bCounter-1);
-					frames+=processList[j].memSize;
-					pList.push_back(processList[j].processName);
-					break;
+					if(bCounter > 0)
+					{
+						memset(&this->mem[i-bCounter], processList[j].processName, processList[j].memSize);
+						bzero(&this->mem[i+(processList[j].memSize-bCounter)], bCounter);
+						i+=(processList[j].memSize-bCounter-1);
+						frames+=processList[j].memSize;
+						pList.push_back(processList[j].processName);
+						break;
+					}
 				}
 			}
 
