@@ -224,7 +224,7 @@ void optimal(std::vector<int>& virtualMem, const int F){
 			int fault = mem[min];
 			mem[min] = virtualMem[i];
 
-			oss << "[mem: ";
+			oss << " [mem: ";
 			for (int k = 0; k < F; k++){
 				oss << mem[k];
 				if (k != F - 1)
@@ -319,7 +319,7 @@ void lru(std::vector<int>& virtualMem, const int F){
 			int fault = mem[min];
 			mem[min] = virtualMem[i];
 
-			oss << "[mem: ";
+			oss << " [mem: ";
 			for (int k = 0; k < F; k++){
 				oss << mem[k];
 				if (k != F - 1)
@@ -360,7 +360,7 @@ void lfu(std::vector<int>& virtualMem, const int F){
 					pageFaults++; 
 					mem[j] = virtualMem[i];
 					memFill++;
-					oss << "[mem: ";
+					oss << " [mem: ";
 					for (int k = 0; k < F; k++){
 						if (mem[k] == - 1)
 							oss << ".";
