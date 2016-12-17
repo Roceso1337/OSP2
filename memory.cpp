@@ -247,7 +247,20 @@ bool memory::addProcess(const process& p, int algoFlag, int timeElapsed)
 			break;
 		case memory::BESTFIT:
 
-			if(this->lastIndex+p.memSize <= this->memorySize)
+			if(!((this->mem[this->lastIndex] >= 0x41) && (this->mem[this->lastIndex] <= 0x5A)))
+			{
+				for(int i=this->lastIndex;i<=this->memorySize;++i)
+				{
+					if((this->mem[i] >= 0x41) && (this->mem[i] <= 0x5A))
+					{
+						nextBlock=i;
+						break;
+					}
+				}
+			}
+
+			if((this->lastIndex+p.memSize <= this->memorySize)
+				&& ((nextBlock == -1) || (this->lastIndex+p.memSize < nextBlock)))
 			{
 				while((this->mem[this->lastIndex] >= 0x41) && (this->mem[this->lastIndex] <= 0x5A))
 					++this->lastIndex;
@@ -298,7 +311,20 @@ bool memory::addProcess(const process& p, int algoFlag, int timeElapsed)
 			break;
 		case memory::WORSTFIT:
 
-			if(this->lastIndex+p.memSize <= this->memorySize)
+			if(!((this->mem[this->lastIndex] >= 0x41) && (this->mem[this->lastIndex] <= 0x5A)))
+			{
+				for(int i=this->lastIndex;i<=this->memorySize;++i)
+				{
+					if((this->mem[i] >= 0x41) && (this->mem[i] <= 0x5A))
+					{
+						nextBlock=i;
+						break;
+					}
+				}
+			}
+
+			if((this->lastIndex+p.memSize <= this->memorySize)
+				&& ((nextBlock == -1) || (this->lastIndex+p.memSize < nextBlock)))
 			{
 				while((this->mem[this->lastIndex] >= 0x41) && (this->mem[this->lastIndex] <= 0x5A))
 					++this->lastIndex;
