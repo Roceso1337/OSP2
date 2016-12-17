@@ -51,7 +51,6 @@ int main(int argc, char *argv[])
 		handleVirt(virtualMem, 1);
 		std::cout << std::endl;
 		handleVirt(virtualMem, 2);
-		std::cout << std::endl;
 
 		fd.close();
 	} else {
