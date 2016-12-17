@@ -448,12 +448,15 @@ int memory::defragment(std::vector<char>& pList)
 			{
 				if(this->mem[i] == processList[j].processName)
 				{
-					memset(&this->mem[i-bCounter], processList[j].processName, processList[j].memSize);
-					bzero(&this->mem[i+(processList[j].memSize-bCounter)], bCounter);
-					i+=(processList[j].memSize-bCounter-1);
-					frames+=processList[j].memSize;
-					pList.push_back(processList[j].processName);
-					break;
+					if(bCounter > 0)
+					{
+						memset(&this->mem[i-bCounter], processList[j].processName, processList[j].memSize);
+						bzero(&this->mem[i+(processList[j].memSize-bCounter)], bCounter);
+						i+=(processList[j].memSize-bCounter-1);
+						frames+=processList[j].memSize;
+						pList.push_back(processList[j].processName);
+						break;
+					}
 				}
 			}
 
