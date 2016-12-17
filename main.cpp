@@ -18,7 +18,9 @@ int main(int argc, char *argv[])
 			lines.push_back(line);
 		}
 
+        std::sort(lines.begin(), lines.end());
 		parsePhys(lines, m);
+
 		for(int i=0;i<4;++i)
 		{
 			m.clear();
